@@ -12,34 +12,34 @@ import org.junit.Before;
 import com.yahoo.ycsb.*;
 public class Client_1Test {
 
-	private AstyanaxClient_1 ac1;
-
-	@Before
-	public void setUp() throws Exception {
-		ac1 = new AstyanaxClient_1();
-		//ac1.init();
-	}
-
-	/**@Test
-	public void initTest() {
-	  	System.out.println("##################################################################");
-		System.out.println("------initTest----");
-		System.out.println("##################################################################");
-	  	try {
-			ac1.init();
-			assertTrue(true);
-			} catch (Exception e) {
 	
-			}
-	}**/
-  	/**@Test
+
+	
+  	@Test
 	public void insert1Test() {
 
-		System.out.println("------------before values-------------");
-		HashMap<String, ByteIterator> values = new HashMap<String, ByteIterator>();
-		StringByteIterator sbi = new StringByteIterator("HelloWorld");
-		values.put("IsThisRealLive", sbi);
-		System.out.println("------------before insert-------------");
-		assertEquals(1, ac1.insert("usertable","1234", values));
-	}**/
+		try{
+			AstyanaxClient_1 ac1 = new AstyanaxClient_1();
+			ac1.init();
+			HashMap<String, ByteIterator> values = new HashMap<String, ByteIterator>();
+			values.put("age", new StringByteIterator("57"));
+	    	values.put("middlename", new StringByteIterator("bradley"));
+	    	values.put("favoritecolor", new StringByteIterator("blue"));
+			assertEquals(0, ac1.insert("usertable","HansBradley", values));
+
+			HashMap<String, ByteIterator> result = new HashMap<String, ByteIterator>();
+			System.out.println("-----------MyTest------------------");
+			assertEquals(0, ac1.read("usertable", "HansBradley", null, result));
+			for (String s : result.keySet()) {
+		      System.out.println("[" + s + "]=[" + result.get(s) + "]");
+		      assertEquals(s, result.get(s));
+
+		    }
+
+		}catch (Exception e) {
+			System.out.println(e);
+			throw new RuntimeException("failed to read from C*", e);
+		}
+		
+	}
 }

@@ -34,7 +34,7 @@ import java.util.Set;
 import java.util.Random;
 import java.util.Properties;
 import java.io.UnsupportedEncodingException;
-
+import java.util.Map.Entry;
 public class AstyanaxClient_1 extends DB{
 	public static final int Ok = 0;
   	public static final int Error = -1;
@@ -99,20 +99,19 @@ public class AstyanaxClient_1 extends DB{
 	public int insert(String table, String key, HashMap<String, ByteIterator> values) {
 		MutationBatch m = keyspace.prepareMutationBatch();
 		try {
-			for (Map.Entry<String, ByteIterator> entry : values.entrySet()) {
-				String entryKey = ByteBuffer.wrap(entry.getKey().getBytes("UTF-8")).toString();
-				String entryValue = ByteBuffer.wrap(entry.getValue().toArray()).toString();
-				m.withRow(EMP_CF,key).putColumn(entryKey, entryValue, null);
+			for (Entry<String, ByteIterator> entry : values.entrySet()) {
+				System.out.println("key :" + entry.getKey() + " val: "+ entry.getValue());
+				m.withRow(EMP_CF,key).putColumn(entry.getKey(), entry.getValue().toString(), null);
+			}
 
-        	}
 			OperationResult<Void> result = m.execute();
 		} catch (ConnectionException e) {
 			System.out.println(e);
 			return Error;
-		}catch (UnsupportedEncodingException e) {
+		}/**catch (UnsupportedEncodingException e) {
 			System.out.println(e);
 			return Error;
-		}
+		}**/
 		return Ok;
 	}
 
@@ -148,7 +147,31 @@ public class AstyanaxClient_1 extends DB{
 	* @return Zero on success, a non-zero error code on error
 	*/
 	public int read(String table, String key, Set<String> fields, HashMap<String, ByteIterator> result) {
-
+		try{
+			
+			if(fields == null) {
+				OperationResult<ColumnList<String>> oResult =
+				keyspace.prepareQuery(EMP_CF)
+					.getKey(key)
+					.execute();
+				ColumnList<String> columns = oResult.getResult();
+				
+				System.out.println("Column names: " );
+				for(String s : columns.getColumnNames()){
+					System.out.println("Column: " + s + " value: "+columns.getColumnByName(s).getStringValue());
+				}
+			} else {
+					OperationResult<CqlResult<String, String>> opResult;
+					for(String s : fields) {
+							opResult = keyspace.prepareQuery(EMP_CF)
+										.withCql(String.format("SELECT * FROM %s WHERE %s=%d;", EMP_CF_NAME, s, key))
+										.execute();	
+					}
+			}
+		}catch (ConnectionException e) {
+			System.out.println(e);
+			throw new RuntimeException("failed to read from C*", e);
+		}
 		return Ok;
 	}
 
@@ -176,7 +199,6 @@ public class AstyanaxClient_1 extends DB{
 	 * @return Zero on success, a non-zero error code on error.  See this class's description for a discussion of error codes.
 	 */
 	public int scan(String table, String startkey, int recordcount, Set<String> fields, Vector<HashMap<String,ByteIterator>> result) {
-		System.out.println("-----scan---");
 		return Ok;
 	}
 	/**
