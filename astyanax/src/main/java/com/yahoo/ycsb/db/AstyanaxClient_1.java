@@ -14,6 +14,7 @@ import com.netflix.astyanax.connectionpool.exceptions.ConnectionException;
 import com.netflix.astyanax.connectionpool.impl.ConnectionPoolConfigurationImpl;
 import com.netflix.astyanax.connectionpool.impl.CountingConnectionPoolMonitor;
 import com.netflix.astyanax.impl.AstyanaxConfigurationImpl;
+import com.netflix.astyanax.model.Column;
 import com.netflix.astyanax.model.ColumnFamily;
 import com.netflix.astyanax.model.ColumnList;
 import com.netflix.astyanax.model.CqlResult;
@@ -21,6 +22,8 @@ import com.netflix.astyanax.model.Row;
 import com.netflix.astyanax.serializers.IntegerSerializer;
 import com.netflix.astyanax.serializers.StringSerializer;
 import com.netflix.astyanax.thrift.ThriftFamilyFactory;
+import com.netflix.astyanax.query.IndexQuery;
+import com.netflix.astyanax.model.Rows;
 //new imports:
 import com.yahoo.ycsb.*;
 import java.util.Map;
@@ -30,7 +33,6 @@ import java.nio.ByteBuffer;
 import java.util.Vector;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.Random;
 import java.util.Properties;
 import java.io.UnsupportedEncodingException;
@@ -100,18 +102,16 @@ public class AstyanaxClient_1 extends DB{
 		MutationBatch m = keyspace.prepareMutationBatch();
 		try {
 			for (Entry<String, ByteIterator> entry : values.entrySet()) {
-				System.out.println("key :" + entry.getKey() + " val: "+ entry.getValue());
-				m.withRow(EMP_CF,key).putColumn(entry.getKey(), entry.getValue().toString(), null);
+				//System.out.println("key :" + entry.getKey() + " val: "+ entry.getValue());
+				m.withRow(EMP_CF,key).putColumn(entry.getKey(), entry.getValue().toString(), null).setTimestamp(System.currentTimeMillis());
+				values.put(key , new StringByteIterator(entry.getValue().toString()));
 			}
 
 			OperationResult<Void> result = m.execute();
 		} catch (ConnectionException e) {
 			System.out.println(e);
 			return Error;
-		}/**catch (UnsupportedEncodingException e) {
-			System.out.println(e);
-			return Error;
-		}**/
+		}
 		return Ok;
 	}
 
@@ -148,7 +148,7 @@ public class AstyanaxClient_1 extends DB{
 	*/
 	public int read(String table, String key, Set<String> fields, HashMap<String, ByteIterator> result) {
 		try{
-			
+			//HashMap<String, ByteIterator> tuple = new HashMap<String, ByteIterator>();
 			if(fields == null) {
 				OperationResult<ColumnList<String>> oResult =
 				keyspace.prepareQuery(EMP_CF)
@@ -156,23 +156,32 @@ public class AstyanaxClient_1 extends DB{
 					.execute();
 				ColumnList<String> columns = oResult.getResult();
 				
-				System.out.println("Column names: " );
-				for(String s : columns.getColumnNames()){
-					System.out.println("Column: " + s + " value: "+columns.getColumnByName(s).getStringValue());
+				//System.out.println("Column names: " );
+				for(String s : columns.getColumnNames()) {
+					//tuple.put(s,new StringByteIterator(columns.getColumnByName(s).getStringValue() ) );
+					result.put(s,new StringByteIterator(columns.getColumnByName(s).getStringValue()));
+					//System.out.println("Column: " + s + " value: "+columns.getColumnByName(s).getStringValue());
 				}
 			} else {
-					OperationResult<CqlResult<String, String>> opResult;
-					for(String s : fields) {
-							opResult = keyspace.prepareQuery(EMP_CF)
-										.withCql(String.format("SELECT * FROM %s WHERE %s=%d;", EMP_CF_NAME, s, key))
-										.execute();	
-					}
+					OperationResult<ColumnList<String>> opResult = keyspace.prepareQuery(EMP_CF)
+				    .getKey(key)
+				    .withColumnSlice(fields)
+				    .execute();	
+				    ColumnList<String> columns = opResult.getResult();
+				
+				//System.out.println("Column names: " );
+				for(String s : columns.getColumnNames()) {
+					result.put(s,new StringByteIterator(columns.getColumnByName(s).getStringValue()));
+					//System.out.println("Column: " + s + " value: "+columns.getColumnByName(s).getStringValue());
+				}
 			}
+			return Ok;
 		}catch (ConnectionException e) {
 			System.out.println(e);
-			throw new RuntimeException("failed to read from C*", e);
+			return Error;
+			
 		}
-		return Ok;
+		
 	}
 
 	/**
@@ -185,7 +194,17 @@ public class AstyanaxClient_1 extends DB{
    * @return Zero on success, a non-zero error code on error
    */
 	public int delete(String table, String key) {
-		return Ok;
+		try{
+			MutationBatch m = keyspace.prepareMutationBatch();
+			m.withRow(EMP_CF, key)
+				.delete();
+			return Ok;
+		} catch (Exception e) {
+			System.out.println(e);
+			return Error;
+			
+		}
+		
 	}
 
 	/**
@@ -199,7 +218,32 @@ public class AstyanaxClient_1 extends DB{
 	 * @return Zero on success, a non-zero error code on error.  See this class's description for a discussion of error codes.
 	 */
 	public int scan(String table, String startkey, int recordcount, Set<String> fields, Vector<HashMap<String,ByteIterator>> result) {
-		return Ok;
+		try {
+			OperationResult<Rows<String,String>>opResult;
+			opResult = keyspace.prepareQuery(EMP_CF)
+			    .searchWithIndex()
+			    .setStartKey(startkey)
+			    .setRowLimit(recordcount)
+			    .withColumnSlice(fields)
+			    .execute();
+			//ColumnList<String> columns = opResult.getResult();
+			//for(String s : columns.getColumnNames()) {
+				//result.put(s,new StringByteIterator(columns.getColumnByName(s).getStringValue()));
+			//}
+			for (Row<String, String> row : opResult.getResult()) {
+				HashMap<String,ByteIterator> resultMap = new HashMap<String,ByteIterator> ();
+				ColumnList<String> columns = row.getColumns();		
+				for(String name : columns.getColumnNames()) {
+					resultMap.put(name, new StringByteIterator(columns.getColumnByName(name).getStringValue()));
+				}
+				result.add(resultMap);
+			}
+			return Ok;
+		} catch (ConnectionException e) {
+			System.out.println(e);
+			return Error;
+		}
+		
 	}
 	/**
 	* Perform a range scan for a set of records in the database. Each field/value
