@@ -212,7 +212,24 @@ public class AstyanaxClient_1 extends DB{
 	 */
 	public int scan(String table, String startkey, int recordcount, Set<String> fields, Vector<HashMap<String,ByteIterator>> result) {
 		try {
-			OperationResult<Rows<String,String>>opResult;
+
+			if (fields == null) {
+				OperationResult<Rows<String,String>>opResult;
+				opResult = keyspace.prepareQuery(EMP_CF)
+				    .searchWithIndex()
+				    .setStartKey(startkey)
+				    .setRowLimit(recordcount).addPreparedExpressions(null)
+				    .execute();
+				for (Row<String, String> row : opResult.getResult()) {
+				HashMap<String,ByteIterator> resultMap = new HashMap<String,ByteIterator> ();
+				ColumnList<String> columns = row.getColumns();		
+				for(String name : columns.getColumnNames()) {
+					resultMap.put(name, new StringByteIterator(columns.getColumnByName(name).getStringValue()));
+				}
+				result.add(resultMap);
+			}
+			} else {
+				OperationResult<Rows<String,String>>opResult;
 			opResult = keyspace.prepareQuery(EMP_CF)
 			    .searchWithIndex()
 			    .setStartKey(startkey)
@@ -228,6 +245,8 @@ public class AstyanaxClient_1 extends DB{
 				}
 				result.add(resultMap);
 			}
+			}
+			
 			return Ok;
 		} catch (ConnectionException e) {
 			System.out.println(e);

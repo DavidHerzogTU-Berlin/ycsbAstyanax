@@ -40,7 +40,7 @@ public class Client_1Test {
 			}
 
 			Vector<HashMap<String,ByteIterator>> scanResult = new Vector<HashMap<String,ByteIterator>>();
-			assertEquals(0, ac1.scan("data", "HansBradley", 2, readSet, scanResult));
+			assertEquals(0, ac1.scan("data", "HansBradley", 2, null, scanResult));
 			System.out.println("Scan results: ");
 			for (HashMap<String, ByteIterator> hashMap : scanResult) {
 				for (String column : hashMap.keySet()) {
