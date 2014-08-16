@@ -58,7 +58,6 @@ public class AstyanaxClient_1 extends DB{
 		/**if (hosts == null) {
 			throw new DBException("Required property \"hosts\" missing for CassandraClient");
 		}**/
-	    //logger.debug("init()");
 	    context = new AstyanaxContext.Builder()
 	    .forCluster("Test Cluster")
 	    .forKeyspace("usertable")
@@ -102,9 +101,10 @@ public class AstyanaxClient_1 extends DB{
 		MutationBatch m = keyspace.prepareMutationBatch();
 		try {
 			for (Entry<String, ByteIterator> entry : values.entrySet()) {
-				//System.out.println("key :" + entry.getKey() + " val: "+ entry.getValue());
-				m.withRow(EMP_CF,key).putColumn(entry.getKey(), entry.getValue().toString(), null).setTimestamp(System.currentTimeMillis());
-				values.put(key , new StringByteIterator(entry.getValue().toString()));
+				m.withRow(EMP_CF,key)
+				.putColumn(entry.getKey(), entry.getValue().toString(), null)
+				.setTimestamp(System.currentTimeMillis());
+				
 			}
 
 			OperationResult<Void> result = m.execute();
@@ -148,19 +148,14 @@ public class AstyanaxClient_1 extends DB{
 	*/
 	public int read(String table, String key, Set<String> fields, HashMap<String, ByteIterator> result) {
 		try{
-			//HashMap<String, ByteIterator> tuple = new HashMap<String, ByteIterator>();
 			if(fields == null) {
 				OperationResult<ColumnList<String>> oResult =
 				keyspace.prepareQuery(EMP_CF)
 					.getKey(key)
 					.execute();
 				ColumnList<String> columns = oResult.getResult();
-				
-				//System.out.println("Column names: " );
 				for(String s : columns.getColumnNames()) {
-					//tuple.put(s,new StringByteIterator(columns.getColumnByName(s).getStringValue() ) );
 					result.put(s,new StringByteIterator(columns.getColumnByName(s).getStringValue()));
-					//System.out.println("Column: " + s + " value: "+columns.getColumnByName(s).getStringValue());
 				}
 			} else {
 					OperationResult<ColumnList<String>> opResult = keyspace.prepareQuery(EMP_CF)
@@ -168,11 +163,9 @@ public class AstyanaxClient_1 extends DB{
 				    .withColumnSlice(fields)
 				    .execute();	
 				    ColumnList<String> columns = opResult.getResult();
-				
-				//System.out.println("Column names: " );
-				for(String s : columns.getColumnNames()) {
-					result.put(s,new StringByteIterator(columns.getColumnByName(s).getStringValue()));
-					//System.out.println("Column: " + s + " value: "+columns.getColumnByName(s).getStringValue());
+			
+				for(String name : columns.getColumnNames()) {
+					result.put(name,new StringByteIterator(columns.getColumnByName(name).getStringValue()));
 				}
 			}
 			return Ok;
@@ -226,10 +219,7 @@ public class AstyanaxClient_1 extends DB{
 			    .setRowLimit(recordcount)
 			    .withColumnSlice(fields)
 			    .execute();
-			//ColumnList<String> columns = opResult.getResult();
-			//for(String s : columns.getColumnNames()) {
-				//result.put(s,new StringByteIterator(columns.getColumnByName(s).getStringValue()));
-			//}
+			    System.out.println("Operation result ext.");
 			for (Row<String, String> row : opResult.getResult()) {
 				HashMap<String,ByteIterator> resultMap = new HashMap<String,ByteIterator> ();
 				ColumnList<String> columns = row.getColumns();		
