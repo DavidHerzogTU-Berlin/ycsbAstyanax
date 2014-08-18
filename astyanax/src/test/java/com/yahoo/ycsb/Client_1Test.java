@@ -39,17 +39,24 @@ public class Client_1Test {
 				System.out.println("Column: " + column + " Value: " + result.get(column) );
 			}
 
-			Vector<HashMap<String,ByteIterator>> scanResult = new Vector<HashMap<String,ByteIterator>>();
+			/**Vector<HashMap<String,ByteIterator>> scanResult = new Vector<HashMap<String,ByteIterator>>();
 			assertEquals(0, ac1.scan("data", "HansBradley", 2, null, scanResult));
 			System.out.println("Scan results: ");
 			for (HashMap<String, ByteIterator> hashMap : scanResult) {
 				for (String column : hashMap.keySet()) {
 					System.out.println("Column: " + column + " Value: " + result.get(column) );
 				}
+			}**/
+			assertEquals(0, ac1.delete("data", "HansBradley"));
+			assertEquals(0, ac1.delete("data", "HansBradley1"));
+			assertEquals(0, ac1.delete("data", "HansBradley2"));
+			HashMap<String, ByteIterator> result2 = new HashMap<String, ByteIterator>();
+			assertEquals(0, ac1.read("data", "HansBradley", null, result2));
+
+			System.out.println("Read results: ");
+			for (String column : result2.keySet()) {
+				System.out.println("Column: " + column + " Value: " + result.get(column) );
 			}
-			assertEquals(0,ac1.delete("data", "HansBradley"));
-			assertEquals(0,ac1.delete("data", "HansBradley1"));
-			assertEquals(0,ac1.delete("data", "HansBradley2"));
 		}catch (Exception e) {
 			System.out.println(e);
 		}

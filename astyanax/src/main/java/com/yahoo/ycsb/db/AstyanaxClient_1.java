@@ -191,6 +191,7 @@ public class AstyanaxClient_1 extends DB{
 			MutationBatch m = keyspace.prepareMutationBatch();
 			m.withRow(EMP_CF, key)
 				.delete();
+			m.execute();
 			return Ok;
 		} catch (Exception e) {
 			System.out.println(e);
@@ -211,15 +212,16 @@ public class AstyanaxClient_1 extends DB{
 	 * @return Zero on success, a non-zero error code on error.  See this class's description for a discussion of error codes.
 	 */
 	public int scan(String table, String startkey, int recordcount, Set<String> fields, Vector<HashMap<String,ByteIterator>> result) {
-		try {
+		throw new UnsupportedOperationException("Scan method is not implemented.");
+		/**try {
 
 			if (fields == null) {
 				OperationResult<Rows<String,String>>opResult;
 				opResult = keyspace.prepareQuery(EMP_CF)
-				    .searchWithIndex()
-				    .setStartKey(startkey)
-				    .setRowLimit(recordcount).addPreparedExpressions(null)
+				    .getRowRange(startkey, "", "", "", recordcount)
+				    .withColumnSlice(fields)
 				    .execute();
+
 				for (Row<String, String> row : opResult.getResult()) {
 				HashMap<String,ByteIterator> resultMap = new HashMap<String,ByteIterator> ();
 				ColumnList<String> columns = row.getColumns();		
@@ -251,7 +253,7 @@ public class AstyanaxClient_1 extends DB{
 		} catch (ConnectionException e) {
 			System.out.println(e);
 			return Error;
-		}
+		}**/
 		
 	}
 	/**
