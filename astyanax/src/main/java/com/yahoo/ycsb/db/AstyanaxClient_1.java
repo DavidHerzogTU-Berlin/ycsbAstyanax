@@ -189,8 +189,10 @@ public class AstyanaxClient_1 extends DB{
 	public int delete(String table, String key) {
 		try{
 			MutationBatch m = keyspace.prepareMutationBatch();
+			//timestamp is not set, because i will not delete properly
 			m.withRow(EMP_CF, key)
-				.delete();
+				.setTimestamp(System.currentTimeMillis())
+				.delete(); 
 			m.execute();
 			return Ok;
 		} catch (Exception e) {
