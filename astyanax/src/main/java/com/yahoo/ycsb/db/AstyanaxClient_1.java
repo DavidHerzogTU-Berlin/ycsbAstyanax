@@ -1,8 +1,6 @@
 package com.yahoo.ycsb.db;
 
 import static com.netflix.astyanax.examples.ModelConstants.*;
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
 
 import com.netflix.astyanax.AstyanaxContext;
 import com.netflix.astyanax.ColumnListMutation;
@@ -23,8 +21,8 @@ import com.netflix.astyanax.serializers.IntegerSerializer;
 import com.netflix.astyanax.serializers.StringSerializer;
 import com.netflix.astyanax.thrift.ThriftFamilyFactory;
 import com.netflix.astyanax.query.IndexQuery;
+import com.netflix.astyanax.model.ConsistencyLevel;
 import com.netflix.astyanax.model.Rows;
-//new imports:
 import com.yahoo.ycsb.*;
 import java.util.Map;
 import java.util.Set;
@@ -37,6 +35,7 @@ import java.util.Random;
 import java.util.Properties;
 import java.io.UnsupportedEncodingException;
 import java.util.Map.Entry;
+
 public class AstyanaxClient_1 extends DB{
 	public static final int Ok = 0;
   	public static final int Error = -1;
@@ -44,6 +43,16 @@ public class AstyanaxClient_1 extends DB{
 	private Keyspace keyspace;
 	private ColumnFamily<String, String> EMP_CF;
 	private static final String EMP_CF_NAME = "data";
+
+	public static final String READ_CONSISTENCY_LEVEL_PROPERTY = "cassandra.readconsistencylevel";
+	public static final String READ_CONSISTENCY_LEVEL_PROPERTY_DEFAULT = "ONE";
+
+	public static final String WRITE_CONSISTENCY_LEVEL_PROPERTY = "cassandra.writeconsistencylevel";
+	public static final String WRITE_CONSISTENCY_LEVEL_PROPERTY_DEFAULT = "ONE";
+
+	ConsistencyLevel readConsistencyLevel;
+  	ConsistencyLevel writeConsistencyLevel;
+
 	private static final String INSERT_STATEMENT =
 		String.format("INSERT INTO %s (%s, %s, %s, %s) VALUES (?, ?, ?, ?)",
 		EMP_CF_NAME, COL_NAME_EMPID, COL_NAME_DEPTID, COL_NAME_FIRST_NAME, COL_NAME_LAST_NAME);
@@ -58,6 +67,15 @@ public class AstyanaxClient_1 extends DB{
 		/**if (hosts == null) {
 			throw new DBException("Required property \"hosts\" missing for CassandraClient");
 		}**/
+		System.out.println("coniste new");
+		System.out.println(getProperties().getProperty(READ_CONSISTENCY_LEVEL_PROPERTY, READ_CONSISTENCY_LEVEL_PROPERTY_DEFAULT));
+		readConsistencyLevel = ConsistencyLevel
+			.valueOf("CL_"+getProperties()
+				.getProperty(READ_CONSISTENCY_LEVEL_PROPERTY, READ_CONSISTENCY_LEVEL_PROPERTY_DEFAULT));
+		writeConsistencyLevel = ConsistencyLevel
+			.valueOf("CL_"+getProperties()
+				.getProperty(WRITE_CONSISTENCY_LEVEL_PROPERTY, WRITE_CONSISTENCY_LEVEL_PROPERTY_DEFAULT));
+			
 	    context = new AstyanaxContext.Builder()
 	    .forCluster("Test Cluster")
 	    .forKeyspace("usertable")
