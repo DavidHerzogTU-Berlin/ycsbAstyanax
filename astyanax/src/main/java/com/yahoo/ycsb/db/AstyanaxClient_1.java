@@ -10,6 +10,7 @@ import com.netflix.astyanax.connectionpool.NodeDiscoveryType;
 import com.netflix.astyanax.connectionpool.OperationResult;
 import com.netflix.astyanax.connectionpool.exceptions.ConnectionException;
 import com.netflix.astyanax.connectionpool.impl.ConnectionPoolConfigurationImpl;
+import com.netflix.astyanax.connectionpool.impl.*;
 import com.netflix.astyanax.connectionpool.impl.CountingConnectionPoolMonitor;
 import com.netflix.astyanax.impl.AstyanaxConfigurationImpl;
 import com.netflix.astyanax.model.Column;
@@ -50,42 +51,45 @@ public class AstyanaxClient_1 extends DB{
 	public static final String WRITE_CONSISTENCY_LEVEL_PROPERTY = "cassandra.writeconsistencylevel";
 	public static final String WRITE_CONSISTENCY_LEVEL_PROPERTY_DEFAULT = "ONE";
 
-	ConsistencyLevel readConsistencyLevel;
-  	ConsistencyLevel writeConsistencyLevel;
+	public static final String NODE_DISCOVERY_PROPERTY = "discoveryType";
+	public static final String NODE_DISCOVERY_PROPERTY_DEFAULT = "NONE";
 
-	private static final String INSERT_STATEMENT =
-		String.format("INSERT INTO %s (%s, %s, %s, %s) VALUES (?, ?, ?, ?)",
-		EMP_CF_NAME, COL_NAME_EMPID, COL_NAME_DEPTID, COL_NAME_FIRST_NAME, COL_NAME_LAST_NAME);
+	public static final String CONNECTION_POOL_PROPERTY = "connectionPoolType";
+	public static final String CONNECTION_POOL_PROPERTY_DEFAULT = "TOKEN_AWARE";
+	
+	public static final String SEED_PROPERTY = "seeds";
+	public static final String SEED_PROPERTY_DEFAULT ="127.0.0.1:9160";
+	
+	public static final String MAXCONS_PROPERTY = "maxCons";
+	public static final String MAXCONS_PROPERTY_DEFAULT = "1";
 
-	private static final String CREATE_STATEMENT =
-		String.format("CREATE TABLE %s (%s int, %s int, %s varchar, %s varchar, PRIMARY KEY (%s, %s))",
-		EMP_CF_NAME, COL_NAME_EMPID, COL_NAME_DEPTID, COL_NAME_FIRST_NAME, COL_NAME_LAST_NAME,
-		COL_NAME_EMPID, COL_NAME_DEPTID);
+	public static final String PORT_PROPERTY ="port";
+	public static final String PORT_PROPERTY_DEFAULT ="9160";
 
 	public void init() throws DBException {
-		String hosts = getProperties().getProperty("hosts");
-		/**if (hosts == null) {
-			throw new DBException("Required property \"hosts\" missing for CassandraClient");
-		}**/
-		System.out.println("coniste new");
-		System.out.println(getProperties().getProperty(READ_CONSISTENCY_LEVEL_PROPERTY, READ_CONSISTENCY_LEVEL_PROPERTY_DEFAULT));
-		readConsistencyLevel = ConsistencyLevel
-			.valueOf("CL_"+getProperties()
-				.getProperty(READ_CONSISTENCY_LEVEL_PROPERTY, READ_CONSISTENCY_LEVEL_PROPERTY_DEFAULT));
-		writeConsistencyLevel = ConsistencyLevel
-			.valueOf("CL_"+getProperties()
-				.getProperty(WRITE_CONSISTENCY_LEVEL_PROPERTY, WRITE_CONSISTENCY_LEVEL_PROPERTY_DEFAULT));
-			
 	    context = new AstyanaxContext.Builder()
 	    .forCluster("Test Cluster")
 	    .forKeyspace("usertable")
 	    .withAstyanaxConfiguration(new AstyanaxConfigurationImpl()      
-	        .setDiscoveryType(NodeDiscoveryType.RING_DESCRIBE)
+	        .setDiscoveryType(NodeDiscoveryType
+	        	.valueOf(getProperties()
+	        		.getProperty(NODE_DISCOVERY_PROPERTY, NODE_DISCOVERY_PROPERTY_DEFAULT)))
+	        .setConnectionPoolType(ConnectionPoolType
+	        	.valueOf(getProperties()
+	        		.getProperty(CONNECTION_POOL_PROPERTY, CONNECTION_POOL_PROPERTY_DEFAULT)))
+	        .setDefaultReadConsistencyLevel(ConsistencyLevel
+				.valueOf("CL_"+getProperties()
+					.getProperty(READ_CONSISTENCY_LEVEL_PROPERTY, READ_CONSISTENCY_LEVEL_PROPERTY_DEFAULT)))
+	        .setDefaultWriteConsistencyLevel(ConsistencyLevel
+				.valueOf("CL_"+getProperties()
+					.getProperty(WRITE_CONSISTENCY_LEVEL_PROPERTY, WRITE_CONSISTENCY_LEVEL_PROPERTY_DEFAULT)))
 	    )
 	    .withConnectionPoolConfiguration(new ConnectionPoolConfigurationImpl("MyConnectionPool")
-	        .setPort(9160)
-	        .setMaxConnsPerHost(1)
-	        .setSeeds("127.0.0.1:9160")
+	        .setPort(Integer.valueOf(getProperties().getProperty(PORT_PROPERTY, PORT_PROPERTY_DEFAULT)))
+	        .setMaxConnsPerHost(Integer.valueOf(getProperties()
+	        	.getProperty(MAXCONS_PROPERTY, MAXCONS_PROPERTY_DEFAULT)))
+	        .setSeeds(getProperties()
+	        	.getProperty(SEED_PROPERTY, SEED_PROPERTY_DEFAULT))
 	    )
 	    .withAstyanaxConfiguration(new AstyanaxConfigurationImpl()      
 	        .setCqlVersion("3.1.0")
@@ -207,7 +211,6 @@ public class AstyanaxClient_1 extends DB{
 	public int delete(String table, String key) {
 		try{
 			MutationBatch m = keyspace.prepareMutationBatch();
-			//timestamp is not set, because i will not delete properly
 			m.withRow(EMP_CF, key)
 				.setTimestamp(System.currentTimeMillis())
 				.delete(); 
@@ -276,67 +279,6 @@ public class AstyanaxClient_1 extends DB{
 		}**/
 		
 	}
-	/**
-	* Perform a range scan for a set of records in the database. Each field/value
-	* pair from the result will be stored in a HashMap.
-	*
-	* @param table
-	*          The name of the table
-	* @param startkey
-	*          The record key of the first record to read.
-	* @param recordcount
-	*          The number of records to read
-	* @param fields
-	*          The list of fields to read, or null for all of them
-	* @param result
-	*          A Vector of HashMaps, where each HashMap is a set field/value
-	*          pairs for one record
-	* @return Zero on success, a non-zero error code on error
-	*/
-	/**public int scan(String table, String startkey, int recordcount, Set<String> fields,
-	Vector<HashMap<String, ByteIterator>> result) {
-		return Ok;
-	}
-
-
-	public void insert2(int key, String firstname, String lastname) {
-		MutationBatch m = keyspace.prepareMutationBatch();
-
-		m.withRow(EMP_CF, key)
-			.putColumn("firstname", firstname, null)
-			.putColumn("lastname", lastname, null);
-
-		try {
-			OperationResult<Void> result = m.execute();
-		} catch (ConnectionException e) {
-			System.out.println(e);
-		}
-	}
-
-	public void read2(int key) {
-		try{
-			OperationResult<ColumnList<String>> result =
-				keyspace.prepareQuery(EMP_CF)
-					.getKey(key)
-					.execute();
-
-			ColumnList<String> columns = result.getResult();
-			if(columns != null) {
-				System.out.println("firstname: "+columns.getColumnByName("firstname").getStringValue());
-				System.out.println("lastname: "+columns.getColumnByName("lastname").getStringValue());
-		
-			} else {
-				System.out.println("Columns are null");
-			}
-			
-		}catch (ConnectionException e) {
-			System.out.println(e);
-			throw new RuntimeException("failed to read from C*", e);
-		}
-		
-	}**/
-
-
-    
+	
 
 }
