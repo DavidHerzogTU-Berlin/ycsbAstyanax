@@ -1,4 +1,4 @@
-Yahoo! Cloud System Benchmark (YCSB)
+Astyanax Client in: Yahoo! Cloud System Benchmark (YCSB)
 ====================================
 [![Build Status](https://travis-ci.org/brianfrankcooper/YCSB.png?branch=master)](https://travis-ci.org/brianfrankcooper/YCSB)
 
@@ -11,12 +11,12 @@ ycsb-users@yahoogroups.com
 Getting Started
 ---------------
 
-1. Download the latest release of YCSB:
+1. Clone the latest release of YCSB:
 
     ```sh
-    wget https://github.com/downloads/brianfrankcooper/YCSB/ycsb-0.1.4.tar.gz
-    tar xfvz ycsb-0.1.4
-    cd ycsb-0.1.4
+    git clone https://github.com/DavidHerzogTU-Berlin/ycsbAstyanax.git
+    cd ycsbAstyanax
+    mvn clean package
     ```
     
 2. Set up a database to benchmark. There is a README file under each binding 
@@ -25,8 +25,8 @@ Getting Started
 3. Run YCSB command. 
     
     ```sh
-    bin/ycsb load basic -P workloads/workloada
-    bin/ycsb run basic -P workloads/workloada
+    bin/ycsb load astyanax-1 -P workloads/workloada
+    bin/ycsb run astyanax-1 -P workloads/workloada
     ```
 
   Running the `ycsb` command without any argument will print the usage. 
