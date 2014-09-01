@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence-diagram version="1.1.6" icons="true">  
+  <object id="1" language="java" name="SmaLatencyScoreStrategyImpl" project="astyanax" 
+    file="/astyanax/astyanax-core/src/main/java/com/netflix/astyanax/connectionpool/impl/SmaLatencyScoreStrategyImpl.java" 
+    binary="false" label="smaLatencyScoreStrategyImpl" type="class" autoSize="true">    
+    <position height="-1" width="-1" x="257" y="0"/>    
+    <execution id="2">      
+      <position height="232" width="202" x="5" y="104"/>    
+    </execution>  
+  </object>  
+  <object id="5" language="java" name="com.netflix.astyanax.connectionpool.LatencyScoreStrategy.Listener" 
+    project="astyanax" 
+    file="/astyanax/astyanax-core/src/main/java/com/netflix/astyanax/connectionpool/LatencyScoreStrategy.java" 
+    binary="false" label="listener" type="interface" autoSize="true">    
+    <position height="-1" width="-1" x="580" y="0"/>    
+    <execution id="4">      
+      <position height="194" width="159" x="211" y="123"/>    
+    </execution>  
+  </object>  
+  <object id="8" language="java" name="AbstractHostPartitionConnectionPool" project="astyanax" 
+    file="/astyanax/astyanax-core/src/main/java/com/netflix/astyanax/connectionpool/impl/AbstractHostPartitionConnectionPool.java" 
+    binary="false" label="abstractHostPartitionConnectionPool" type="class" autoSize="true">    
+    <position height="-1" width="-1" x="842" y="0"/>    
+    <execution id="7">      
+      <position height="96" width="268" x="374" y="202"/>    
+    </execution>    
+    <execution id="10">      
+      <position height="19" width="268" x="374" y="240"/>    
+    </execution>    
+    <execution id="12">      
+      <position height="19" width="268" x="374" y="240"/>    
+    </execution>  
+  </object>  
+  <object id="15" language="java" name="TokenPartitionedTopology" project="astyanax" 
+    file="/astyanax/astyanax-core/src/main/java/com/netflix/astyanax/connectionpool/impl/TokenPartitionedTopology.java" 
+    binary="false" label="tokenPartitionedTopology" type="class" autoSize="true">    
+    <position height="-1" width="-1" x="711" y="0"/>    
+    <execution id="16">      
+      <position height="192" width="200" x="646" y="266"/>    
+    </execution>    
+    <execution id="18">      
+      <position height="19" width="200" x="646" y="304"/>    
+    </execution>    
+    <execution id="20">      
+      <position height="19" width="7" x="743" y="304"/>    
+    </execution>    
+    <execution id="14">      
+      <position height="19" width="200" x="646" y="260"/>    
+    </execution>  
+  </object>  
+  <object id="23" language="java" name="HostConnectionPoolPartition" project="astyanax" 
+    file="/astyanax/astyanax-core/src/main/java/com/netflix/astyanax/connectionpool/impl/HostConnectionPoolPartition.java" 
+    binary="false" label="hostConnectionPoolPartition" type="class" autoSize="true">    
+    <position height="-1" width="-1" x="905" y="0"/>    
+    <execution id="22">      
+      <position height="116" width="218" x="850" y="323"/>    
+    </execution>    
+    <execution id="27">      
+      <position height="19" width="218" x="850" y="361"/>    
+    </execution>  
+  </object>  
+  <object id="28" language="java" name="com.netflix.astyanax.connectionpool.impl.AbstractLatencyScoreStrategyImpl" 
+    project="TestAstyanaxCl" 
+    file="/home/david/astaynax/astyanax/astyanax-core/build/libs/astyanax-core-2.0.2-SNAPSHOT.jar" binary="true" 
+    label="abstractLatencyScoreStrategyImpl" type="class" autoSize="true">    
+    <position height="-1" width="-1" x="966" y="0"/>    
+    <execution id="25">      
+      <position height="76" width="226" x="1072" y="344"/>    
+    </execution>    
+    <execution id="30">      
+      <position height="19" width="226" x="1072" y="382"/>    
+    </execution>  
+  </object>  
+  <message id="3" operation="onReset():void">    
+    <end type="SOURCE" refId="2"/>    
+    <end type="TARGET" refId="4"/>  
+  </message>  
+  <message id="6">    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="7"/>  
+  </message>  
+  <message id="9" operation="rebuildPartitions():void">    
+    <end type="SOURCE" refId="7"/>    
+    <end type="TARGET" refId="10"/>  
+  </message>  
+  <message id="11">    
+    <end type="SOURCE" refId="7"/>    
+    <end type="TARGET" refId="12"/>  
+  </message>  
+  <message id="13">    
+    <end type="SOURCE" refId="7"/>    
+    <end type="TARGET" refId="14"/>  
+  </message>  
+  <message id="17" operation="refresh():void">    
+    <end type="SOURCE" refId="16"/>    
+    <end type="TARGET" refId="18"/>  
+  </message>  
+  <message id="19">    
+    <end type="SOURCE" refId="16"/>    
+    <end type="TARGET" refId="20"/>  
+  </message>  
+  <message id="21">    
+    <end type="SOURCE" refId="16"/>    
+    <end type="TARGET" refId="22"/>  
+  </message>  
+  <message id="24">    
+    <end type="SOURCE" refId="22"/>    
+    <end type="TARGET" refId="25"/>  
+  </message>  
+  <message id="26" operation="refresh():void">    
+    <end type="SOURCE" refId="22"/>    
+    <end type="TARGET" refId="27"/>  
+  </message>  
+  <message id="29" 
+    operation="sortAndfilterPartition(java.util.List&lt;com.netflix.astyanax.connectionpool.HostConnectionPool&lt;CL&gt;&gt;,java.util.concurrent.atomic.AtomicBoolean):java.util.List&lt;com.netflix.astyanax.connectionpool.HostConnectionPool&lt;CL&gt;&gt;">    
+    <end type="SOURCE" refId="25"/>    
+    <end type="TARGET" refId="30"/>  
+  </message>
+</sequence-diagram>
