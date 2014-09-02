@@ -59,14 +59,8 @@ public class RoundRobinExecuteWithFailover<CL, R> extends AbstractExecuteWithFai
     }
 
     public int getNextHostIndex() {
-        try {
-            return index % size;
-        }
-        finally {
-            index++;
-            if (index < 0)
-                index = 0;
-        }
+        //No RR anymore: Get the node with the best score.
+        return 0;
     }
 
     public boolean canRetry() {
