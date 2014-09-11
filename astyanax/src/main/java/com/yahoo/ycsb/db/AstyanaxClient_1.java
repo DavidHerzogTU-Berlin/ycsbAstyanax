@@ -62,10 +62,10 @@ public class AstyanaxClient_1 extends DB {
 	public static final String WRITE_CONSISTENCY_LEVEL_PROPERTY_DEFAULT = "ONE";
 
 	public static final String NODE_DISCOVERY_PROPERTY = "discoveryType";
-	public static final String NODE_DISCOVERY_PROPERTY_DEFAULT = "TOKEN_AWARE";
+	public static final String NODE_DISCOVERY_PROPERTY_DEFAULT = "NONE";
 
 	public static final String CONNECTION_POOL_PROPERTY = "connectionPoolType";
-	public static final String CONNECTION_POOL_PROPERTY_DEFAULT = "TOKEN_AWARE";
+	public static final String CONNECTION_POOL_PROPERTY_DEFAULT = "ROUND_ROBIN";
 
 	public static final String SEED_PROPERTY = "seeds";
 	public static final String SEED_PROPERTY_DEFAULT = "127.0.0.1:9160,127.0.0.2:9160,127.0.0.3:9160";
@@ -121,7 +121,8 @@ public class AstyanaxClient_1 extends DB {
 															+ getProperties()
 																	.getProperty(
 																			WRITE_CONSISTENCY_LEVEL_PROPERTY,
-																			WRITE_CONSISTENCY_LEVEL_PROPERTY_DEFAULT))))
+																			WRITE_CONSISTENCY_LEVEL_PROPERTY_DEFAULT)))
+									.setCqlVersion("3.1.0").setTargetCassandraVersion("2.0"))
 					.withConnectionPoolConfiguration(
 							new ConnectionPoolConfigurationImpl(
 									"MyConnectionPool")
@@ -143,9 +144,6 @@ public class AstyanaxClient_1 extends DB {
 									.setHostSelectorStrategy(
 											HostSelectorStrategy
 													.valueOf("LEAST_OUTSTANDING")))
-					.withAstyanaxConfiguration(
-							new AstyanaxConfigurationImpl().setCqlVersion(
-									"3.1.0").setTargetCassandraVersion("2.0"))
 					.withConnectionPoolMonitor(
 							new CountingConnectionPoolMonitor())
 					.buildKeyspace(ThriftFamilyFactory.getInstance());
