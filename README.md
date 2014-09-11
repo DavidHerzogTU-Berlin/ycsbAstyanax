@@ -18,11 +18,19 @@ Getting Started
     cd ycsbAstyanax
     mvn clean package
     ```
+   
+
+2. Build the modified Astyanax-Build and replace the .jars in the maven repository:
     
-2. Set up a database to benchmark. There is a README file under each binding 
+    ```sh
+    cd astyanaxToBuild/
+    bash beforeGradle.sh
+    ```
+
+3. Set up a database to benchmark. There is a README file under each binding 
    directory.
 
-3. Run YCSB command. 
+4. Run YCSB command. 
     
     ```sh
     bin/ycsb load astyanax-1 -P workloads/workloada
