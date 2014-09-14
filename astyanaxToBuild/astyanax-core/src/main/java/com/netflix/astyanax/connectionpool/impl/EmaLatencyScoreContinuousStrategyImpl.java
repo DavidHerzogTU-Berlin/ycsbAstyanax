@@ -5,6 +5,7 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import com.google.common.collect.Lists;
+import com.netflix.astyanax.connectionpool.impl.PendingRequestMap;
 
 /**
  * Calculate latency as an exponential moving average.
@@ -14,18 +15,14 @@ import com.google.common.collect.Lists;
 public class EmaLatencyScoreContinuousStrategyImpl extends AbstractLatencyScoreStrategyImpl {
     private final static String NAME = "EMA";
     
-    private static final double N = 100;
-    private final double k; // cached value for calculation
+    private final double k = .9 ; // cached value for calculation
     private final double one_minus_k; // cached value for calculation
     private long newSample;
     
     public EmaLatencyScoreContinuousStrategyImpl() {
         super(NAME);
-        
-        this.k = (double)2 / (double)(this.N + 1);
         this.one_minus_k = 1 - this.k;
         this.newSample = 0;
-        System.out.println("EmaLatencyScoreContinuousStrategyImpl()2/1.9");
     }
     
     @Override
@@ -37,12 +34,10 @@ public class EmaLatencyScoreContinuousStrategyImpl extends AbstractLatencyScoreS
             public void addSample(long sample) {
                 newSample = sample;
                 update();
-                
             }
     
             @Override
             public double getScore() {
-                System.out.println("EmaLatencyScoreContinuousStrategyImpl.getScore(): " + cachedScore);
                 return cachedScore;
             }
     
@@ -52,11 +47,10 @@ public class EmaLatencyScoreContinuousStrategyImpl extends AbstractLatencyScoreS
             }
     
             /**
-             * Drain all the samples and update the cached score
+             *  update the cached score
              */
             @Override
             public void update() {
-                System.out.println("EmaLatencyScoreContinuousStrategyImpl.update()");
                 Double ema = cachedScore;
                 if(newSample == 0) {
                     cachedScore = 0.0d;

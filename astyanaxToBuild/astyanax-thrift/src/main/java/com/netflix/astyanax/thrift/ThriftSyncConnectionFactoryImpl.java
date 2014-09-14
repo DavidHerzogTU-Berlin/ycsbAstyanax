@@ -301,7 +301,8 @@ public class ThriftSyncConnectionFactoryImpl implements ConnectionFactory<Cassan
 
         @Override
         public String toString() {
-            return String.format(NAME_FORMAT, getHost().getHostName(), id);
+        	//changed this from String.format(NAME_FORMAT, getHost().getHostName(), id); to :
+            return getHost().getIpAddress();
         }
 
         /**

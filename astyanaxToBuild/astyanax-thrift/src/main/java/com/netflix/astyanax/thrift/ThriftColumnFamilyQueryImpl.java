@@ -73,7 +73,7 @@ import com.netflix.astyanax.thrift.model.ThriftCounterSuperColumnImpl;
 import com.netflix.astyanax.thrift.model.ThriftRowsListImpl;
 import com.netflix.astyanax.thrift.model.ThriftRowsSliceImpl;
 import com.netflix.astyanax.thrift.model.ThriftSuperColumnImpl;
-
+import com.netflix.astyanax.connectionpool.impl.PendingRequestMap;
 /**
  * Implementation of all column family queries using the thrift API.
  *
@@ -114,7 +114,6 @@ public class ThriftColumnFamilyQueryImpl<K, C> implements ColumnFamilyQuery<K, C
     // Single ROW query
     @Override
     public RowQuery<K, C> getKey(final K rowKey) {
-    	System.out.println("ThriftColumnFamilyQueryImpl.getkey()");
         return new AbstractRowQueryImpl<K, C>(columnFamily.getColumnSerializer()) {
             private boolean firstPage = true;
 
@@ -123,13 +122,11 @@ public class ThriftColumnFamilyQueryImpl<K, C> implements ColumnFamilyQuery<K, C
                 return new ColumnQuery<C>() {
                     @Override
                     public OperationResult<Column<C>> execute() throws ConnectionException {
-                    	System.out.println("ThriftColumnFamilyQueryImpl.getkey(): execute");
                         return connectionPool.executeWithFailover(new AbstractKeyspaceOperationImpl<Column<C>>(
                                 tracerFactory.newTracer(CassandraOperationType.GET_COLUMN, columnFamily), pinnedHost,
                                 keyspace.getKeyspaceName()) {
                             @Override
                             public Column<C> internalExecute(Client client, ConnectionContext context) throws Exception {
-                            	System.out.println("ThriftColumnFamilyQueryImpl.getkey(): internalExecute");
                                 ColumnOrSuperColumn cosc = client.get(
                                         columnFamily.getKeySerializer().toByteBuffer(rowKey),
                                         new org.apache.cassandra.thrift.ColumnPath().setColumn_family(
@@ -177,6 +174,7 @@ public class ThriftColumnFamilyQueryImpl<K, C> implements ColumnFamilyQuery<K, C
                         return executor.submit(new Callable<OperationResult<Column<C>>>() {
                             @Override
                             public OperationResult<Column<C>> call() throws Exception {
+                            	System.out.println("executeAsync() " +  Thread.currentThread().getId());
                                 return execute();
                             }
                         });
@@ -186,7 +184,6 @@ public class ThriftColumnFamilyQueryImpl<K, C> implements ColumnFamilyQuery<K, C
 
             @Override
             public OperationResult<ColumnList<C>> execute() throws ConnectionException {
-            	System.out.println("ThriftColumnFamilyQueryImpl.execute()");
                 return connectionPool.executeWithFailover(
                         new AbstractKeyspaceOperationImpl<ColumnList<C>>(tracerFactory.newTracer(
                                 CassandraOperationType.GET_ROW, columnFamily), pinnedHost, keyspace.getKeyspaceName()) {
@@ -203,12 +200,20 @@ public class ThriftColumnFamilyQueryImpl<K, C> implements ColumnFamilyQuery<K, C
 
                             @Override
                             public ColumnList<C> internalExecute(Client client, ConnectionContext context) throws Exception {   
-                            	System.out.println("ThriftColumnFamilyQueryImpl.execute(): internalExecute");
+        
+                                PendingRequestMap.incrementPendingRequest(context.toString());
                                 List<ColumnOrSuperColumn> columnList = client.get_slice(columnFamily.getKeySerializer()
                                         .toByteBuffer(rowKey), new ColumnParent().setColumn_family(columnFamily
                                         .getName()), predicate, ThriftConverter
                                         .ToThriftConsistencyLevel(consistencyLevel));
-                                
+                                PendingRequestMap.decrementPendingRequest(context.toString());
+                                if(pinnedHost != null)
+                                    System.out.println("+++++++++execute host: " + pinnedHost.getIpAddress());
+                                else {
+                                    System.out.println("pinnedHost is null");
+                                }
+                                //ConnectionMap.incrementConnection(usedHost);
+                                //System.out.println("Host: " + usedHost.getHostName() + " Count: " + ConnectionMap.getCountOfHost(usedHost));
                                 // Special handling for pagination
                                 if (isPaginating && predicate.isSetSlice_range()) {
                                     // Did we reach the end of the query.
@@ -251,9 +256,19 @@ public class ThriftColumnFamilyQueryImpl<K, C> implements ColumnFamilyQuery<K, C
                                 }
                                 ColumnList<C> result = new ThriftColumnOrSuperColumnListImpl<C>(columnList,
                                         columnFamily.getColumnSerializer());
+                                for (C s : result.getColumnNames()) {
+                                	if(s.equals("MU")) {
+                                		PendingRequestMap.addMUSample(context.toString() , 
+                                				Double.valueOf(result.getColumnByName( s).getStringValue()) );
+                                	}
+                                	if(s.equals("QSZ")) {                
+                                		PendingRequestMap.addQSZsample(context.toString() , 
+                                				Double.valueOf(result.getColumnByName( s).getStringValue()) );
+                                	}
+                				}
                                 return result;
                             }
-
+                            
                             @Override
                             public ByteBuffer getRowKey() {
                                 return columnFamily.getKeySerializer().toByteBuffer(rowKey);
@@ -263,7 +278,6 @@ public class ThriftColumnFamilyQueryImpl<K, C> implements ColumnFamilyQuery<K, C
 
             @Override
             public ColumnCountQuery getCount() {
-            	System.out.println("ThriftColumnFamilyQueryImpl.getCount()");
                 return new ColumnCountQuery() {
                     @Override
                     public OperationResult<Integer> execute() throws ConnectionException {
@@ -458,7 +472,6 @@ public class ThriftColumnFamilyQueryImpl<K, C> implements ColumnFamilyQuery<K, C
 
     @Override
     public RowSliceQuery<K, C> getKeySlice(final Iterable<K> keys) {
-    	System.out.println("ThriftColumnFamilyQueryImpl.getKeySlice()");
         return new AbstractRowSliceQueryImpl<K, C>(columnFamily.getColumnSerializer()) {
             @Override
             public OperationResult<Rows<K, C>> execute() throws ConnectionException {
@@ -540,7 +553,6 @@ public class ThriftColumnFamilyQueryImpl<K, C> implements ColumnFamilyQuery<K, C
 
     @Override
     public RowSliceQuery<K, C> getKeySlice(final Collection<K> keys) {
-    	System.out.println("ThriftColumnFamilyQueryImpl.getKeySlice()");
         return new AbstractRowSliceQueryImpl<K, C>(columnFamily.getColumnSerializer()) {
             @Override
             public OperationResult<Rows<K, C>> execute() throws ConnectionException {
@@ -707,13 +719,11 @@ public class ThriftColumnFamilyQueryImpl<K, C> implements ColumnFamilyQuery<K, C
 
     @Override
     public AllRowsQuery<K, C> getAllRows() {
-    	System.out.println("ThriftColumnFamilyQueryImpl.getAllRows()");
         return new ThriftAllRowsQueryImpl<K, C>(this);
     }
 
     @Override
     public ColumnFamilyQuery<K, C> pinToHost(Host host) {
-    	System.out.println("ThriftColumnFamilyQueryImpl.pintToHost()");
         this.pinnedHost = host;
         return this;
     }
@@ -726,7 +736,6 @@ public class ThriftColumnFamilyQueryImpl<K, C> implements ColumnFamilyQuery<K, C
 
     @Override
     public RowQuery<K, C> getRow(K rowKey) {
-    	System.out.println("ThriftColumnFamilyQueryImpl.getRow");
         return getKey(rowKey);
     }
 
@@ -737,7 +746,6 @@ public class ThriftColumnFamilyQueryImpl<K, C> implements ColumnFamilyQuery<K, C
 
     @Override
     public RowSliceQuery<K, C> getRowSlice(K... keys) {
-    	System.out.println("ThriftColumnFamilyQueryImpl.getRowSlice");
         return getKeySlice(keys);
     }
 
@@ -748,7 +756,6 @@ public class ThriftColumnFamilyQueryImpl<K, C> implements ColumnFamilyQuery<K, C
 
     @Override
     public RowSliceQuery<K, C> getRowSlice(Iterable<K> keys) {
-    	System.out.println("ThriftColumnFamilyQueryImpl.getRowSlice()");
         return getKeySlice(keys);
     }
 

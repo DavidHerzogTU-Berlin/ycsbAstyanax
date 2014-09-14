@@ -243,30 +243,22 @@ public class AstyanaxClient_1 extends DB {
 							}
 
 							@Override
-							public void onSuccess(
-									OperationResult<ColumnList<String>> oResult) {
-								System.out
-										.println("SUCCESS yeah baby#########");
-								ColumnList<String> columns = oResult
-										.getResult();
-								for (String s : columns.getColumnNames()) {
-									result2.put(s, new StringByteIterator(
-											columns.getColumnByName(s)
-													.getStringValue()));
-								}
+							public void onSuccess(OperationResult<ColumnList<String>> oResult) {
 
 							}
 
 						});
-				opresult.get();
-				result = result2;
+				ColumnList<String> columns  = opresult.get().getResult();
+				for (String s : columns.getColumnNames()) {
+					result.put(s, new StringByteIterator(
+						columns.getColumnByName(s)
+						.getStringValue()));
+				}
 
 			} else {
 				final ListenableFuture<OperationResult<ColumnList<String>>> opresult = keyspace
 						.prepareQuery(EMP_CF).getKey(key1)
 						.withColumnSlice(fields1).executeAsync();
-				System.out.println("before future thread id "
-						+ Thread.currentThread().getId());
 				Futures.addCallback(
 						opresult,
 						new FutureCallback<OperationResult<ColumnList<String>>>() {
@@ -279,21 +271,17 @@ public class AstyanaxClient_1 extends DB {
 							@Override
 							public void onSuccess(
 									OperationResult<ColumnList<String>> oResult) {
-								System.out
-										.println("SUCCESS yeah baby#########");
-								ColumnList<String> columns = oResult
-										.getResult();
-								for (String s : columns.getColumnNames()) {
-									result2.put(s, new StringByteIterator(
-											columns.getColumnByName(s)
-													.getStringValue()));
-								}
 
 							}
 
 						});
-				opresult.get();
-				result = result2;
+				
+				ColumnList<String> columns  = opresult.get().getResult();
+				for (String s : columns.getColumnNames()) {
+					result.put(s, new StringByteIterator(
+						columns.getColumnByName(s)
+						.getStringValue()));
+				}
 			}
 			return Ok;
 

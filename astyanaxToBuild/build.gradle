@@ -5,6 +5,7 @@ buildscript {
     repositories {
         mavenLocal()
         mavenCentral() // maven { url 'http://jcenter.bintray.com' }
+         maven {url "http://repo.akka.io/snapshots/"} //akka
     }
     apply from: file('gradle/buildscript.gradle'), to: buildscript 
 }
@@ -12,9 +13,10 @@ buildscript {
 allprojects {
     repositories { 
         mavenCentral() // maven { url: 'http://jcenter.bintray.com' }
+        maven {url "http://repo.akka.io/snapshots/"} //akka
     }
 }
-
+//apply plugin: 'scala' //aka
 apply plugin: 'idea'
 apply plugin: 'osgi'
 
@@ -29,14 +31,17 @@ subprojects {
     group = "com.netflix.${githubProjectName}"
 
     apply plugin: 'eclipse'
-    apply plugin: 'idea'
+    apply plugin: 'idea' //akka
 
     dependencies {
         compile "joda-time:joda-time:$jodaTimeVersion"
         compile "com.github.stephenc.high-scale-lib:high-scale-lib:$highScaleLibVersion"
-        compile ("com.google.guava:guava:$guavaVersion") {
-             force = true
-        }
+       // compile ("com.google.guava:guava:$guavaVersion") {
+        //     force = true
+       // }
+        compile group: 'com.google.guava', name: 'guava', version: '17.0'
+        compile 'org.scala-lang:scala-library:2.10.4' //akka
+
         compile "com.eaio.uuid:uuid:$uuidVersion"
         compile "org.slf4j:slf4j-api:$slf4jVersion"
         compile "org.codehaus.jettison:jettison:$jettisonVersion"
@@ -47,9 +52,18 @@ subprojects {
         compile "org.codehaus.jackson:jackson-mapper-asl:$jacksonVersion"
         compile "org.xerial.snappy:snappy-java:$snappyVersion"
         compile "org.apache.cassandra:cassandra-all:$cassandraVersion"
+
+      
         testCompile "junit:junit:$junitVersion"
     }
 }
+//akka
+tasks.withType(ScalaCompile) { 
+scalaCompileOptions.useAnt = false
+}
+//akka
+
+
 
 project(':astyanax') {
     dependencies {
@@ -70,6 +84,9 @@ project(':astyanax-core') {
     apply plugin: 'osgi'
     apply plugin: 'java'
     dependencies {
+         compile group: 'com.typesafe.akka', name: 'akka-actor_2.10', version: '2.4-SNAPSHOT' //akka
+        compile group: 'org.scala-lang', name: 'scala-library', version: '2.10.4' //akka
+        compile "com.typesafe:config:1.0.2"
         testCompile "junit:junit:$junitVersion"
     }
 }

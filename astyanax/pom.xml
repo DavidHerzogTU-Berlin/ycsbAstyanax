@@ -11,6 +11,18 @@
   <name>Astyanax</name>
   <packaging>jar</packaging>
 
+      <repositories>
+    <repository>
+    <id>akka-snapshots</id>
+    <snapshots>
+    <enabled>true</enabled>
+    </snapshots>
+    <url>http://repo.akka.io/snapshots/</url>
+    </repository>
+    </repositories>
+
+
+
   <dependencies>
      
      <dependency>
@@ -19,15 +31,39 @@
        <version>${project.version}</version>
      </dependency>
      <dependency>
-            <groupId>com.netflix.astyanax</groupId>
-            <artifactId>astyanax</artifactId>
-            <version>1.56.42</version>
+        <groupId>com.netflix.astyanax</groupId>
+        <artifactId>astyanax</artifactId>
+        <version>1.56.42</version>
      </dependency>
      <dependency>
-  <groupId>com.google.guava</groupId>
-  <artifactId>guava</artifactId>
-  <version>14.0.1</version>
-</dependency>     
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>17.0</version>
+    </dependency> 
+
+    <dependency>
+      <groupId>com.typesafe</groupId>
+      <artifactId>config</artifactId>
+      <version>1.2.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.typesafe.akka</groupId>
+      <artifactId>akka-actor_2.10</artifactId>
+      <version>2.4-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-library</artifactId>
+      <version>2.10.3-RC1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-compiler</artifactId>
+      <version>2.10.3-RC1</version>
+    </dependency>
+
+    
             
   </dependencies>
   
