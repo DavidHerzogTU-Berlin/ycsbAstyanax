@@ -51,6 +51,7 @@ public abstract class AbstractLatencyScoreStrategyImpl implements LatencyScoreSt
         this.instances = new NonBlockingHashSet<Instance>();
     }
     
+   
     /**
      * 
      * @param name
@@ -151,7 +152,6 @@ public abstract class AbstractLatencyScoreStrategyImpl implements LatencyScoreSt
     @Override
     public <CL> List<HostConnectionPool<CL>> sortAndfilterPartition(List<HostConnectionPool<CL>> srcPools,
             AtomicBoolean prioritized) {
-        System.out.println("sortAndfilterPartition()");
         List<HostConnectionPool<CL>> pools = Lists.newArrayList(srcPools);
         Collections.sort(pools, scoreComparator);
         prioritized.set(false);
@@ -206,12 +206,17 @@ public abstract class AbstractLatencyScoreStrategyImpl implements LatencyScoreSt
                 }
             }
         }
+        if (name != "EMAC") {
+        	Collections.shuffle(pools);
+        }
         
         
         
         return pools;
     }
-
+    
+    
+    
     @Override
     public void update() {
         for (Instance inst : instances) {
