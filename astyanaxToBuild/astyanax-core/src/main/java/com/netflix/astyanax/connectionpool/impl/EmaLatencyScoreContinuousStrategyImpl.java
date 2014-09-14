@@ -43,6 +43,7 @@ public class EmaLatencyScoreContinuousStrategyImpl extends AbstractLatencyScoreS
     
             @Override
             public double getScore() {
+                System.out.println(" EMAC: getScore");
                 return cachedScore;
             }
     

@@ -134,7 +134,6 @@ public class TokenPartitionedTopology<CL> implements Topology<CL> {
      */
     public synchronized boolean setPools(Collection<HostConnectionPool<CL>> ring) {
         boolean didChange = false;
-        
         Set<HostConnectionPool<CL>> allPools = Sets.newHashSet();
         
         // Create a mapping of end token to a list of hosts that own the token
@@ -185,7 +184,6 @@ public class TokenPartitionedTopology<CL> implements Topology<CL> {
             List<TokenHostConnectionPoolPartition<CL>> partitions = Lists.newArrayList(tokenToPartitionMap.values());
             Collections.sort(partitions, partitionComparator);
             this.allPools.setPools(allPools);
-            System.out.println("TokenPartitionedTopology.setPools().refresh");
             refresh();
             this.sortedRing.set(Collections.unmodifiableList(partitions));
         }
@@ -195,20 +193,16 @@ public class TokenPartitionedTopology<CL> implements Topology<CL> {
 
     @Override
     public synchronized void resumePool(HostConnectionPool<CL> pool) {
-        System.out.println("TokenPartitionedTopology.resumePool().refresh");
         refresh();
     }
 
     @Override
     public synchronized void suspendPool(HostConnectionPool<CL> pool) {
-        System.out.println("TokenPartitionedTopology.resumePool().refresh");
         refresh();
     }
 
     @Override
     public synchronized void refresh() {
-    	
-        System.out.println("TokenPartitionedTopology.refresh()");
         allPools.refresh();
         for (TokenHostConnectionPoolPartition<CL> partition : tokenToPartitionMap.values()) {
             partition.refresh();

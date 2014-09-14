@@ -34,7 +34,6 @@ public class LeastOutstandingExecuteWithFailover<CL, R> extends AbstractExecuteW
     public LeastOutstandingExecuteWithFailover(ConnectionPoolConfiguration config, ConnectionPoolMonitor monitor,
                                          List<HostConnectionPool<CL>> pools) throws ConnectionException {
         super(config, monitor);
-        System.out.println("LeastOutstandingExecuteWithFailover()");
         this.pools = Lists.newArrayList(pools);
 
         if (this.pools == null || this.pools.isEmpty()) {
@@ -57,7 +56,6 @@ public class LeastOutstandingExecuteWithFailover<CL, R> extends AbstractExecuteW
 
     @Override
     public HostConnectionPool<CL> getCurrentHostConnectionPool() {
-        System.out.println("LeastOutstandingExecuteWithFailover.getCurrentHostConnectionPool()");
         return pool;
     }
 

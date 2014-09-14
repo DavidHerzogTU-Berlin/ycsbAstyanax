@@ -127,6 +127,7 @@ public abstract class AbstractLatencyScoreStrategyImpl implements LatencyScoreSt
     private Comparator<HostConnectionPool<?>> scoreComparator = new Comparator<HostConnectionPool<?>>() {
         @Override
         public int compare(HostConnectionPool<?> p1, HostConnectionPool<?> p2) {
+            System.out.println("compare");
             double score1 = p1.getScore();
             double score2 = p2.getScore();
             if (score1 < score2) {
@@ -206,6 +207,7 @@ public abstract class AbstractLatencyScoreStrategyImpl implements LatencyScoreSt
                 }
             }
         }
+        
         if (name != "EMAC") {
         	Collections.shuffle(pools);
         }

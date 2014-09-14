@@ -174,7 +174,7 @@ public class ThriftColumnFamilyQueryImpl<K, C> implements ColumnFamilyQuery<K, C
                         return executor.submit(new Callable<OperationResult<Column<C>>>() {
                             @Override
                             public OperationResult<Column<C>> call() throws Exception {
-                            	System.out.println("executeAsync() " +  Thread.currentThread().getId());
+                 
                                 return execute();
                             }
                         });
@@ -190,7 +190,7 @@ public class ThriftColumnFamilyQueryImpl<K, C> implements ColumnFamilyQuery<K, C
 
                             @Override
                             public ColumnList<C> execute(Client client, ConnectionContext context) throws ConnectionException {
-                            	System.out.println("ThriftColumnFamilyQueryImpl.execute(): execute");
+                      
                                 if (isPaginating && paginateNoMore) {
                                     return new EmptyColumnList<C>();
                                 }
@@ -207,13 +207,6 @@ public class ThriftColumnFamilyQueryImpl<K, C> implements ColumnFamilyQuery<K, C
                                         .getName()), predicate, ThriftConverter
                                         .ToThriftConsistencyLevel(consistencyLevel));
                                 PendingRequestMap.decrementPendingRequest(context.toString());
-                                if(pinnedHost != null)
-                                    System.out.println("+++++++++execute host: " + pinnedHost.getIpAddress());
-                                else {
-                                    System.out.println("pinnedHost is null");
-                                }
-                                //ConnectionMap.incrementConnection(usedHost);
-                                //System.out.println("Host: " + usedHost.getHostName() + " Count: " + ConnectionMap.getCountOfHost(usedHost));
                                 // Special handling for pagination
                                 if (isPaginating && predicate.isSetSlice_range()) {
                                     // Did we reach the end of the query.
@@ -256,16 +249,15 @@ public class ThriftColumnFamilyQueryImpl<K, C> implements ColumnFamilyQuery<K, C
                                 }
                                 ColumnList<C> result = new ThriftColumnOrSuperColumnListImpl<C>(columnList,
                                         columnFamily.getColumnSerializer());
-                                for (C s : result.getColumnNames()) {
-                                	if(s.equals("MU")) {
-                                		PendingRequestMap.addMUSample(context.toString() , 
-                                				Double.valueOf(result.getColumnByName( s).getStringValue()) );
-                                	}
-                                	if(s.equals("QSZ")) {                
-                                		PendingRequestMap.addQSZsample(context.toString() , 
-                                				Double.valueOf(result.getColumnByName( s).getStringValue()) );
-                                	}
-                				}
+                             
+                                if (result.getColumnByName((C) "MU") != null) {
+                                	PendingRequestMap.addMUSample(context.toString() , 
+                            				Double.valueOf(result.getColumnByName( (C) "MU").getStringValue()) );
+                                }
+                                if (result.getColumnByName((C) "QSZ") != null) {
+                                	PendingRequestMap.addQSZsample(context.toString() , 
+                            				Double.valueOf(result.getColumnByName( (C) "QSZ").getStringValue()) );
+                                }
                                 return result;
                             }
                             

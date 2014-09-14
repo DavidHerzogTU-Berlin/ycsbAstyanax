@@ -24,7 +24,6 @@ public class EmaLatencyScoreStrategyImpl extends AbstractLatencyScoreStrategyImp
         this.N = windowSize;
         this.k = (double)2 / (double)(this.N + 1);
         this.one_minus_k = 1 - this.k;
-        System.out.println("EmaLatencyScoreStrategyImpl()");
     }
     
     public EmaLatencyScoreStrategyImpl(int updateInterval, int resetInterval, int windowSize) {
@@ -68,7 +67,6 @@ public class EmaLatencyScoreStrategyImpl extends AbstractLatencyScoreStrategyImp
     
             @Override
             public double getScore() {
-                  System.out.println("EmaLatencyScoreStrategyImpl.getScore()");
                 return cachedScore;
             }
     
@@ -83,7 +81,6 @@ public class EmaLatencyScoreStrategyImpl extends AbstractLatencyScoreStrategyImp
              */
             @Override
             public void update() {
-                  System.out.println("EmaLatencyScoreStrategyImpl.update()");
                 Double ema = cachedScore;
                 ArrayList<Long> samples = Lists.newArrayList();
                 latencies.drainTo(samples);

@@ -38,7 +38,6 @@ public abstract class AbstractThriftCqlQuery<K,C> implements CqlQuery<K,C> {
     
     @Override
     public OperationResult<CqlResult<K, C>> execute() throws ConnectionException {
-    	System.out.println("AbstractThriftCqlQuery.execute()");
         return cfQuery.keyspace.connectionPool.executeWithFailover(
                 new AbstractKeyspaceOperationImpl<CqlResult<K, C>>(cfQuery.keyspace.tracerFactory.newTracer(
                         CassandraOperationType.CQL, cfQuery.columnFamily), cfQuery.pinnedHost, cfQuery.keyspace.getKeyspaceName()) {
@@ -79,7 +78,6 @@ public abstract class AbstractThriftCqlQuery<K,C> implements CqlQuery<K,C> {
         return new AbstractPreparedCqlQuery<K, C>() {
             @Override
             public OperationResult<CqlResult<K, C>> execute() throws ConnectionException {
-            	System.out.println("AbstractThriftCqlQuery.asPreparedStatement()");
                 return cfQuery.keyspace.connectionPool.executeWithFailover(
                         new AbstractKeyspaceOperationImpl<CqlResult<K, C>>(cfQuery.keyspace.tracerFactory.newTracer(
                                 CassandraOperationType.CQL, cfQuery.columnFamily), cfQuery.pinnedHost, cfQuery.keyspace.getKeyspaceName()) {

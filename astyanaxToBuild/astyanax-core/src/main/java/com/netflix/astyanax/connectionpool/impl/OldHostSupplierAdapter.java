@@ -27,7 +27,6 @@ public class OldHostSupplierAdapter implements Supplier<List<Host>> {
                 if (!hosts.contains(host)) {
                     hosts.add(host);
                 }
-                
                 String token = entry.getKey().toString();
                 host.getTokenRanges().add(new TokenRangeImpl(token, token, null));
             }

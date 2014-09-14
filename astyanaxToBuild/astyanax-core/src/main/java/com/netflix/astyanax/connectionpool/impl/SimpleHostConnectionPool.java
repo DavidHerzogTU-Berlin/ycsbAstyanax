@@ -122,7 +122,7 @@ public class SimpleHostConnectionPool<CL> implements HostConnectionPool<CL> {
 
     public SimpleHostConnectionPool(Host host, ConnectionFactory<CL> factory, ConnectionPoolMonitor monitor,
             ConnectionPoolConfiguration config, Listener<CL> listener) {
-        
+        System.out.println("SimpleHostConnectionPool-");
         this.host            = host;
         this.config          = config;
         this.factory         = factory;
@@ -539,8 +539,10 @@ public class SimpleHostConnectionPool<CL> implements HostConnectionPool<CL> {
 
     @Override
     public double getScore() {
-    	if(latencyStrategy.getName() == "EMAC")
+    	if(latencyStrategy.getName() == "EMAC") {
+    		System.out.println("get score for EMAC" );
     		return PendingRequestMap.getScoreForHost(host.getIpAddress());
+    	}
     	else
     		return latencyStrategy.getScore();
     }
