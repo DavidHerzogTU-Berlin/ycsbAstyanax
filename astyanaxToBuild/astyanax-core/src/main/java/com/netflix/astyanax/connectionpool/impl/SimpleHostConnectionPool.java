@@ -46,6 +46,7 @@ import com.netflix.astyanax.connectionpool.exceptions.PoolTimeoutException;
 import com.netflix.astyanax.connectionpool.exceptions.ThrottledException;
 import com.netflix.astyanax.connectionpool.exceptions.TimeoutException;
 import com.netflix.astyanax.connectionpool.exceptions.UnknownException;
+import com.netflix.astyanax.connectionpool.impl.PendingRequestMap;
 
 /**
  * Pool of connections for a single host and implements the {@link HostConnectionPool} interface
@@ -132,13 +133,12 @@ public class SimpleHostConnectionPool<CL> implements HostConnectionPool<CL> {
         this.monitor         = monitor;
         this.availableConnections = new LinkedBlockingQueue<Connection<CL>>();
         this.executor        = config.getHostReconnectExecutor();
-        System.out.println("SimpleHostConnectionPool()");
+        
         Preconditions.checkNotNull(config.getHostReconnectExecutor(), "HostReconnectExecutor cannot be null");
     }
 
     @Override
     public int primeConnections(int numConnections) throws ConnectionException, InterruptedException {
-        System.out.println("SimpleHostConnectionPool.primeConnections()");
         if (isReconnecting()) {
             throw new HostDownException("Can't prime connections on downed host.");
         }
@@ -166,6 +166,7 @@ public class SimpleHostConnectionPool<CL> implements HostConnectionPool<CL> {
             this.markAsDown(null);
             throw new HostDownException("Failed to prime connections", lastException);
         }
+
         return opened;
     }
 
@@ -185,7 +186,7 @@ public class SimpleHostConnectionPool<CL> implements HostConnectionPool<CL> {
     public Connection<CL> borrowConnection(int timeout) throws ConnectionException {
         Connection<CL> connection = null;
         long startTime = System.currentTimeMillis();
-        System.out.println("SimpleHostConnectionPool().borrowConnection.... : " + this.toString());
+
         try {
             // Try to get a free connection without blocking.
             connection = availableConnections.poll();
@@ -222,7 +223,6 @@ public class SimpleHostConnectionPool<CL> implements HostConnectionPool<CL> {
      * @throws ConnectionException
      */
     private Connection<CL> waitForConnection(int timeout) throws ConnectionException {
-        System.out.println("SimpleHostConnectionPool.waitForConnection");
         Connection<CL> connection = null;
         long startTime = System.currentTimeMillis();
         try {
@@ -253,7 +253,6 @@ public class SimpleHostConnectionPool<CL> implements HostConnectionPool<CL> {
      */
     @Override
     public boolean returnConnection(Connection<CL> connection) {
-        System.out.println("SimpleHostConnectionPool.returnConnection");
         returnedCount.incrementAndGet();
         monitor.incConnectionReturned(host);
 
@@ -288,7 +287,6 @@ public class SimpleHostConnectionPool<CL> implements HostConnectionPool<CL> {
 
     @Override
     public boolean closeConnection(Connection<CL> connection) {
-        System.out.println("SimpleHostConnectionPool().closeConnection");
         returnedCount.incrementAndGet();
         monitor.incConnectionReturned(host);
         internalCloseConnection(connection);
@@ -296,7 +294,6 @@ public class SimpleHostConnectionPool<CL> implements HostConnectionPool<CL> {
     }
 
     private void internalCloseConnection(Connection<CL> connection) {
-        System.out.println("SimpleHostConnectionPool.internalCloseConnection");
         try {
             closedConnections.incrementAndGet();
             connection.close();
@@ -317,7 +314,6 @@ public class SimpleHostConnectionPool<CL> implements HostConnectionPool<CL> {
      */
     @Override
     public void markAsDown(ConnectionException reason) {
-        System.out.println("SimpleHostConnectionPool().markAsDown");
         // Make sure we're not triggering the reconnect process more than once
         if (isReconnecting.compareAndSet(false, true)) {
             
@@ -374,7 +370,6 @@ public class SimpleHostConnectionPool<CL> implements HostConnectionPool<CL> {
     }
 
     private void reconnect() throws Exception {
-        System.out.println("SimpleHostConnectionPool().reconnect");
         try {
             if (activeCount.get() < config.getMaxConnsPerHost()) {
                 if (activeCount.incrementAndGet() <= config.getMaxConnsPerHost()) {
@@ -422,7 +417,6 @@ public class SimpleHostConnectionPool<CL> implements HostConnectionPool<CL> {
      * it's ready.
      */
     private boolean tryOpenAsync() {
-        System.out.println("SimpleHostConnectionPool.tryOpenAsync");
         Connection<CL> connection = null;
         // Try to open a new connection, as long as we haven't reached the max
         if (activeCount.get() < config.getMaxConnsPerHost()) {
@@ -493,8 +487,7 @@ public class SimpleHostConnectionPool<CL> implements HostConnectionPool<CL> {
     
     @Override
     public Host getHost() {
-        System.out.println("SimpleHostConnectionPool.getHost(): " + host.getIpAddress() );
-        
+       
         return host;
     }
 
@@ -546,13 +539,13 @@ public class SimpleHostConnectionPool<CL> implements HostConnectionPool<CL> {
 
     @Override
     public double getScore() {
-        return latencyStrategy.getScore();
+        return PendingRequestMap.getScoreForHost(host.getIpAddress());
     }
 
     @Override
     public void addLatencySample(long latency, long now) {
-        System.out.println("SimpleHostConnectionPool.addLatencySample()");
         latencyStrategy.addSample(latency);
+        PendingRequestMap.addRTsample(host.getIpAddress(), Double.valueOf(latency));
     }
     
     @Override
