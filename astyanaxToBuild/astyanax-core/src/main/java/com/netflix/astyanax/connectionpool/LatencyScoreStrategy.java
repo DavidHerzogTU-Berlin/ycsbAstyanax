@@ -14,6 +14,9 @@ public interface LatencyScoreStrategy {
      * Single instance of this strategy associated with an endpoint
      */
     public interface Instance {
+    	
+    	String getName();
+    	
         /**
          * Add a single latency sample
          * 

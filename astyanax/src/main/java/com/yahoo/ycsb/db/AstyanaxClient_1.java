@@ -75,6 +75,13 @@ public class AstyanaxClient_1 extends DB {
 
 	public static final String PORT_PROPERTY = "port";
 	public static final String PORT_PROPERTY_DEFAULT = "9160";
+	
+	public static final String HOST_SELECTOR_STRATEGY = "hss";
+	public static final String HOST_SELECTOR_STRATEGY_DEFAULT = "ROUND_ROBIN";
+	
+	public static final String SCORE_STRATEGY = "ss";
+	public static final String SCORE_STRATEGY_DEFAULT = "continuous";
+	
 	private static AstyanaxContext<Keyspace> context;
 	private static Keyspace keyspace;
 	private static Object lock = new Object();
@@ -91,6 +98,8 @@ public class AstyanaxClient_1 extends DB {
 		synchronized (lock) {
 
 			needTotSetInit = false;
+			ConnectionPoolConfigurationImpl connectionPoolConfig = new ConnectionPoolConfigurationImpl(getProperties()
+					.getProperty(SCORE_STRATEGY, SCORE_STRATEGY_DEFAULT));
 			context = new AstyanaxContext.Builder()
 					.forCluster("Test Cluster")
 					.forKeyspace("usertable")
@@ -124,8 +133,7 @@ public class AstyanaxClient_1 extends DB {
 																			WRITE_CONSISTENCY_LEVEL_PROPERTY_DEFAULT)))
 									.setCqlVersion("3.1.0").setTargetCassandraVersion("2.0"))
 					.withConnectionPoolConfiguration(
-							new ConnectionPoolConfigurationImpl(
-									"MyConnectionPool")
+							connectionPoolConfig
 									.setPort(
 											Integer.valueOf(getProperties()
 													.getProperty(PORT_PROPERTY,
@@ -139,15 +147,22 @@ public class AstyanaxClient_1 extends DB {
 											getProperties().getProperty(
 													SEED_PROPERTY,
 													SEED_PROPERTY_DEFAULT))
-									.setLatencyScoreStrategy(
-											new EmaLatencyScoreContinuousStrategyImpl())
 									.setHostSelectorStrategy(
 											HostSelectorStrategy
-													.valueOf("LEAST_OUTSTANDING")))
+													.valueOf(getProperties().getProperty(HOST_SELECTOR_STRATEGY, HOST_SELECTOR_STRATEGY_DEFAULT))))
 					.withConnectionPoolMonitor(
 							new CountingConnectionPoolMonitor())
 					.buildKeyspace(ThriftFamilyFactory.getInstance());
-
+			
+			String latencyScoreStrategy = getProperties().getProperty(SCORE_STRATEGY, SCORE_STRATEGY_DEFAULT);
+			if(latencyScoreStrategy == "continuous") {
+				connectionPoolConfig.setLatencyScoreStrategy(new EmaLatencyScoreContinuousStrategyImpl());
+			} else {
+				if(latencyScoreStrategy == "ema")
+					connectionPoolConfig.setLatencyScoreStrategy(new EmaLatencyScoreStrategyImpl(20));
+				else
+					connectionPoolConfig.setLatencyScoreStrategy(new SmaLatencyScoreStrategyImpl());
+			}
 			context.start();
 			keyspace = context.getEntity();
 
@@ -226,29 +241,12 @@ public class AstyanaxClient_1 extends DB {
 	public int read(String table, String key, Set<String> fields,
 			HashMap<String, ByteIterator> result) {
 		try {
-			final HashMap<String, ByteIterator> result2 = new HashMap<String, ByteIterator>();
-			final String key1 = key;
-			final Set<String> fields1 = fields;
 			if (fields == null) {
 
-				final ListenableFuture<OperationResult<ColumnList<String>>> opresult = keyspace
-						.prepareQuery(EMP_CF).getKey(key).executeAsync();
-				Futures.addCallback(
-						opresult,
-						new FutureCallback<OperationResult<ColumnList<String>>>() {
-
-							@Override
-							public void onFailure(Throwable e) {
-								System.out.println("onFailure fields null");
-							}
-
-							@Override
-							public void onSuccess(OperationResult<ColumnList<String>> oResult) {
-
-							}
-
-						});
-				ColumnList<String> columns  = opresult.get().getResult();
+				final OperationResult<ColumnList<String>> opresult = keyspace
+						.prepareQuery(EMP_CF).getKey(key).execute();
+				
+				ColumnList<String> columns  = opresult.getResult();
 				for (String s : columns.getColumnNames()) {
 					result.put(s, new StringByteIterator(
 						columns.getColumnByName(s)
@@ -256,27 +254,12 @@ public class AstyanaxClient_1 extends DB {
 				}
 
 			} else {
-				final ListenableFuture<OperationResult<ColumnList<String>>> opresult = keyspace
-						.prepareQuery(EMP_CF).getKey(key1)
-						.withColumnSlice(fields1).executeAsync();
-				Futures.addCallback(
-						opresult,
-						new FutureCallback<OperationResult<ColumnList<String>>>() {
-
-							@Override
-							public void onFailure(Throwable e) {
-								System.out.println("onFailure fields null");
-							}
-
-							@Override
-							public void onSuccess(
-									OperationResult<ColumnList<String>> oResult) {
-
-							}
-
-						});
 				
-				ColumnList<String> columns  = opresult.get().getResult();
+				final OperationResult<ColumnList<String>> opresult = keyspace
+						.prepareQuery(EMP_CF).getKey(key)
+						.withColumnSlice(fields).execute();
+				
+				ColumnList<String> columns  = opresult.getResult();
 				for (String s : columns.getColumnNames()) {
 					result.put(s, new StringByteIterator(
 						columns.getColumnByName(s)

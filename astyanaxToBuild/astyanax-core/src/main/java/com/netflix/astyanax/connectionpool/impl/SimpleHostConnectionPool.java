@@ -539,13 +539,18 @@ public class SimpleHostConnectionPool<CL> implements HostConnectionPool<CL> {
 
     @Override
     public double getScore() {
-        return PendingRequestMap.getScoreForHost(host.getIpAddress());
+    	if(latencyStrategy.getName() == "EMAC")
+    		return PendingRequestMap.getScoreForHost(host.getIpAddress());
+    	else
+    		return latencyStrategy.getScore();
     }
 
     @Override
     public void addLatencySample(long latency, long now) {
-        latencyStrategy.addSample(latency);
-        PendingRequestMap.addRTsample(host.getIpAddress(), Double.valueOf(latency));
+    	if(latencyStrategy.getName() == "EMAC")
+    		PendingRequestMap.addRTsample(host.getIpAddress(), Double.valueOf(latency));
+    	else 
+    		latencyStrategy.addSample(latency);    
     }
     
     @Override

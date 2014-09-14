@@ -57,8 +57,6 @@ public class AstyanaxConfigurationImpl implements AstyanaxConfiguration {
     
     public AstyanaxConfigurationImpl() {
     	
-    	
-    	System.out.println("AstyanaxConfigurationImpl"  );
         partitioners.put(org.apache.cassandra.dht.RandomPartitioner.class.getCanonicalName(), BigInteger127Partitioner.get());
         try {
         	partitioners.put(org.apache.cassandra.dht.Murmur3Partitioner.class.getCanonicalName(), Murmur3Partitioner.get());

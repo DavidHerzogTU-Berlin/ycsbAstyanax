@@ -28,6 +28,11 @@ public class SmaLatencyScoreStrategyImpl extends AbstractLatencyScoreStrategyImp
             private volatile Double cachedScore = 0.0d;
     
             @Override
+            public String getName() {
+            	return NAME;
+            }
+            
+            @Override
             public void addSample(long sample) {
                 System.out.println("SmaLatencyScoreStrategyImpl.addSample(): " + sample);
                 if (!latencies.offer(sample)) {
