@@ -38,7 +38,6 @@ public class HostConnectionPoolPartition<CL> {
     public HostConnectionPoolPartition(LatencyScoreStrategy strategy) {
         this.strategy = strategy;
         this.activePools.set(Lists.<HostConnectionPool<CL>>newArrayList());
-        System.out.println("HostConnectionPoolPartition()");
     }
     
     /**
@@ -63,7 +62,6 @@ public class HostConnectionPoolPartition<CL> {
             if (this.pools.remove(pool))
                 didChange = true;
         }
-        System.out.println("HostConnectionPoolPartition.setPools.refresh()");
         if (didChange)
             refresh();
         return didChange;
@@ -77,7 +75,6 @@ public class HostConnectionPoolPartition<CL> {
      */
     public synchronized boolean addPool(HostConnectionPool<CL> pool) {
         if (this.pools.add(pool)) {
-            System.out.println("HostConnectionPoolPartition.addPool().refresh()");
             refresh();
             return true;
         }
@@ -86,7 +83,6 @@ public class HostConnectionPoolPartition<CL> {
     
     public synchronized boolean removePool(HostConnectionPool<CL> pool) {
         if (this.pools.remove(pool)) {
-            System.out.println("HostConnectionPoolPartition.removePool().refresh()");
             refresh();
             return true;
         }
@@ -129,7 +125,6 @@ public class HostConnectionPoolPartition<CL> {
         } catch(Exception e) {
             e.printStackTrace();
         }**/
-        System.out.println("HostConnectionPoolPartition.refresh()");
         List<HostConnectionPool<CL>> pools = Lists.newArrayList();
         for (HostConnectionPool<CL> pool : this.pools) {
             if (!pool.isReconnecting()) {

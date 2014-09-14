@@ -117,13 +117,11 @@ public abstract class AbstractHostPartitionConnectionPool<CL> implements Connect
         config.getLatencyScoreStrategy().start(new Listener() {
             @Override
             public void onUpdate() {
-                System.out.println("AbstractHostPartitionConnectionPool.onUpdate");
                 rebuildPartitions();
             }
 
             @Override
             public void onReset() {
-                System.out.println("AbstractHostPartitionConnectionPool.onReset");
                 rebuildPartitions();
             }
         });
@@ -368,7 +366,6 @@ public abstract class AbstractHostPartitionConnectionPool<CL> implements Connect
      * Called every time a host is added, removed or is marked as down
      */
     protected void rebuildPartitions() {
-        System.out.println("AbstractHostPartitionConnectionPool.rebuildPartitions");
         topology.refresh();
     }
     

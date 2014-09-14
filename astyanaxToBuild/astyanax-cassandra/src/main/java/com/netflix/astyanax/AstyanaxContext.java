@@ -107,17 +107,13 @@ public class AstyanaxContext<T> {
 
         protected <T> ConnectionPool<T> createConnectionPool(ConnectionFactory<T> connectionFactory) {
             ConnectionPool<T> connectionPool = null;
-            System.out.println("AstyanaxContext.creatConnectionPool1");
             // HACK to get the CqlFamilyFactory working with AstyanaxContext
             if (connectionFactory.getClass().getName().contains("CqlFamilyFactory")) {
             	return new ConnectionPoolProxy<T>(cpConfig, connectionFactory, monitor);
             }
-            System.out.println("AstyanaxContext.creatConnectionPool2");
-            System.out.println("conType " + asConfig.getConnectionPoolType());
             switch (asConfig.getConnectionPoolType()) {
             	
             case TOKEN_AWARE:
-            	System.out.println("TOKEN_AWARE");
                 connectionPool = new TokenAwareConnectionPoolImpl<T>(cpConfig, connectionFactory, monitor);
                 break;
 
@@ -128,7 +124,6 @@ public class AstyanaxContext<T> {
 
             case ROUND_ROBIN:
             default:
-            	System.out.println("ROUND_ROBIN");
                 connectionPool = new RoundRobinConnectionPoolImpl<T>(cpConfig, connectionFactory, monitor);
                 break;
             }
