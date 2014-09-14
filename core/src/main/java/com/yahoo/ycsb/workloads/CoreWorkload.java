@@ -37,6 +37,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Vector;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * The core benchmark scenario. Represents a set of clients doing simple CRUD operations. The relative 
@@ -273,6 +275,7 @@ public class CoreWorkload extends Workload
 	boolean orderedinserts;
 
 	int recordcount;
+	private static  AtomicLong readCounter = new AtomicLong(0);
 	
 	protected static IntegerGenerator getFieldLengthGenerator(Properties p) throws WorkloadException{
 		IntegerGenerator fieldlengthgenerator;
@@ -518,6 +521,14 @@ public class CoreWorkload extends Workload
 
 	public void doTransactionRead(DB db)
 	{
+		/**System.out.println("CoreWorkload: try to sleep thread. my id: " +  Thread.currentThread().getId());
+		try {
+			long sleepTime = readCounter.getAndIncrement();
+			Thread.sleep((long) (100 * Math.sin(.01 * sleepTime)*Math.sin(.01 * sleepTime)));
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}**/
 		//choose a random key
 		int keynum = nextKeynum();
 		
@@ -533,7 +544,7 @@ public class CoreWorkload extends Workload
 			fields=new HashSet<String>();
 			fields.add(fieldname);
 		}
-
+		
 		db.read(table,keyname,fields,new HashMap<String,ByteIterator>());
 	}
 	
