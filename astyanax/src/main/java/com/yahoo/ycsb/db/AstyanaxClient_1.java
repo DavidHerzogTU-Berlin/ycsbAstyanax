@@ -100,6 +100,16 @@ public class AstyanaxClient_1 extends DB {
 			needTotSetInit = false;
 			ConnectionPoolConfigurationImpl connectionPoolConfig = new ConnectionPoolConfigurationImpl(getProperties()
 					.getProperty(SCORE_STRATEGY, SCORE_STRATEGY_DEFAULT));
+
+			String latencyScoreStrategy = getProperties().getProperty(SCORE_STRATEGY, SCORE_STRATEGY_DEFAULT);
+			if(latencyScoreStrategy.equals("continuous")) {
+				connectionPoolConfig.setLatencyScoreStrategy(new EmaLatencyScoreContinuousStrategyImpl());
+			} else {
+				if(latencyScoreStrategy.equals("ema"))
+					connectionPoolConfig.setLatencyScoreStrategy(new EmaLatencyScoreStrategyImpl(20));
+				else
+					connectionPoolConfig.setLatencyScoreStrategy(new SmaLatencyScoreStrategyImpl());
+			}
 			context = new AstyanaxContext.Builder()
 					.forCluster("Test Cluster")
 					.forKeyspace("usertable")
@@ -154,15 +164,6 @@ public class AstyanaxClient_1 extends DB {
 							new CountingConnectionPoolMonitor())
 					.buildKeyspace(ThriftFamilyFactory.getInstance());
 			
-			String latencyScoreStrategy = getProperties().getProperty(SCORE_STRATEGY, SCORE_STRATEGY_DEFAULT);
-			if(latencyScoreStrategy == "continuous") {
-				connectionPoolConfig.setLatencyScoreStrategy(new EmaLatencyScoreContinuousStrategyImpl());
-			} else {
-				if(latencyScoreStrategy == "ema")
-					connectionPoolConfig.setLatencyScoreStrategy(new EmaLatencyScoreStrategyImpl(20));
-				else
-					connectionPoolConfig.setLatencyScoreStrategy(new SmaLatencyScoreStrategyImpl());
-			}
 			context.start();
 			keyspace = context.getEntity();
 
