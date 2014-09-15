@@ -10,8 +10,16 @@ import akka.actor.ActorSystem;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.Config;
 import java.util.concurrent.ConcurrentHashMap;
+import akka.actor.ActorRef;
+import akka.actor.Props;
+import java.net.InetAddress;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class PendingRequestMap {
+
+	private static final ConcurrentHashMap<InetAddress, ActorRef> actorMap = new ConcurrentHashMap<InetAddress, ActorRef>();
+    private static final ConcurrentHashMap<InetAddress, CopyOnWriteArrayList<String>> rgInvertedInex = new ConcurrentHashMap<InetAddress, CopyOnWriteArrayList<String>>();
 
 	private static ConcurrentHashMap<String, AtomicInteger> pendingRequestMap = new ConcurrentHashMap<String, AtomicInteger>();
 	private static final Config config = ConfigFactory
@@ -32,6 +40,39 @@ public class PendingRequestMap {
 	private static double c = 1;
 	private final static double k = .9; // value for calculation
 	private final static double one_minus_k = .1; // value for calculation
+	private static Object lock = new Object();
+
+	 public static ActorRef getReplicaGroupActor(List<InetAddress> endpoints) {
+        final InetAddress rgOwner = endpoints.get(0);
+        ActorRef rgActor = actorMap.get(rgOwner);
+        if (rgActor == null) {
+            synchronized (lock) {
+                if (!actorMap.containsKey(rgOwner)) {
+                    rgActor = actorSystem.actorOf(Props.create(ReplicaGroupActor.class).withDispatcher("my-dispatcher"), rgOwner.getHostName());
+                    final ActorRef result = actorMap.putIfAbsent(rgOwner, rgActor);
+                    if (result == null) {
+                        /* For every endpoint, we add the replica group actor's name to the list
+                         */
+                        for (InetAddress e : endpoints) {
+                            rgInvertedInex.putIfAbsent(e, new CopyOnWriteArrayList<String>());
+                            rgInvertedInex.get(e).add(rgOwner.getHostName());
+                        }
+                    }
+           
+                }
+            }
+            return actorMap.get(rgOwner);
+        }
+        return rgActor;
+    }
+
+	public static Config getConfig() {
+		return config;
+	}
+
+	public static ActorSystem getActorSystem() {
+		return actorSystem;
+	}
 
 	public static void addMUSample(String ip, double sample) {
 		AtomicDouble cached = muEmaMap.get(ip);
@@ -105,4 +146,11 @@ public class PendingRequestMap {
 		return pendingRequestMap.get(ip).get();
 	}
 
+	public static AtomicInteger getPendingRequestsAtomic(String ip) {
+		return pendingRequestMap.get(ip);
+	}
+
+	public static int getPendingRequestsMapSize() {
+		return pendingRequestMap.size();
+	}
 }

@@ -76,10 +76,10 @@ public class AstyanaxClient_1 extends DB {
 	public static final String PORT_PROPERTY = "port";
 	public static final String PORT_PROPERTY_DEFAULT = "9160";
 	
-	public static final String HOST_SELECTOR_STRATEGY = "hss";
+	public static final String HOST_SELECTOR_STRATEGY = "hostSelectorStrategy";
 	public static final String HOST_SELECTOR_STRATEGY_DEFAULT = "ROUND_ROBIN";
 	
-	public static final String SCORE_STRATEGY = "ss";
+	public static final String SCORE_STRATEGY = "scoreStrategy";
 	public static final String SCORE_STRATEGY_DEFAULT = "continuous";
 	
 	private static AstyanaxContext<Keyspace> context;
@@ -106,7 +106,7 @@ public class AstyanaxClient_1 extends DB {
 				connectionPoolConfig.setLatencyScoreStrategy(new EmaLatencyScoreContinuousStrategyImpl());
 			} else {
 				if(latencyScoreStrategy.equals("ema"))
-					connectionPoolConfig.setLatencyScoreStrategy(new EmaLatencyScoreStrategyImpl(20));
+					connectionPoolConfig.setLatencyScoreStrategy(new EmaLatencyScoreStrategyImpl(100));
 				else
 					connectionPoolConfig.setLatencyScoreStrategy(new SmaLatencyScoreStrategyImpl());
 			}

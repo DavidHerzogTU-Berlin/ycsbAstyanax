@@ -6,7 +6,7 @@ ext {
  jodaTimeVersion = "1.6.2"
  highScaleLibVersion = "1.1.2"
  uuidVersion = "3.2"
- slf4jVersion = "1.6.4"
+ slf4jVersion = "1.7.7"
  jettisonVersion = "1.2"
  commonsCodecVersion = "1.5"
  commonsLangVersion = "2.4"

@@ -9,7 +9,17 @@ import com.netflix.astyanax.connectionpool.HostConnectionPool;
 import com.netflix.astyanax.connectionpool.Operation;
 import com.netflix.astyanax.connectionpool.exceptions.ConnectionException;
 import com.netflix.astyanax.connectionpool.exceptions.NoAvailableHostsException;
-
+import java.util.LinkedList;
+import java.net.InetAddress;
+import akka.actor.ActorRef;
+import java.net.UnknownHostException;
+import scala.concurrent.Future;
+import scala.concurrent.Await;
+import scala.concurrent.*;
+import static akka.pattern.Patterns.ask;
+import akka.dispatch.*;
+import scala.concurrent.duration.Duration;
+import akka.util.Timeout;
 /**
  * Class that extends {@link AbstractExecuteWithFailoverImpl} to provide
  * functionality for borrowing a {@link Connection} from a list of
@@ -97,6 +107,32 @@ public class RoundRobinExecuteWithFailover<CL, R> extends
 	@Override
 	public Connection<CL> borrowConnection(Operation<CL, R> operation)
 			throws ConnectionException {
+        if (this.config.getName() == "continuous") {
+            List<InetAddress> ipAddressList = new LinkedList<InetAddress>();
+            try {
+                for (HostConnectionPool<CL> hostConpool: pools) {
+                ipAddressList.add(InetAddress.getByName(  hostConpool.getHost().getIpAddress() ));
+                }
+            } catch (UnknownHostException e) {
+                System.out.println(e);
+            }
+            try {
+                Timeout timeout = new Timeout(Duration.create(1, "seconds"));
+                ActorRef actor = PendingRequestMap.getReplicaGroupActor(ipAddressList);
+                String msg = "42";
+                Future<Object> future = ask(actor, msg, timeout);
+
+                //RoundRobinExecuteWithFailover<CL, R> result = future.result(Duration.apply(Duration.Undefined()));
+                String rrObj =  (String ) Await.result(future, timeout.duration());
+                if( rrObj != null){
+                    //if(rrObj instanceof String)
+                        //System.out.println("the future is there, answer us! : " + rrObj);
+                }
+            } catch (Exception e ) {
+                e.printStackTrace();
+            }
+            
+        }        
 		pool = pools.get(getNextHostIndex());
 		return pool.borrowConnection(waitDelta * waitMultiplier);
 	}
