@@ -34,7 +34,6 @@ public class SmaLatencyScoreStrategyImpl extends AbstractLatencyScoreStrategyImp
             
             @Override
             public void addSample(long sample) {
-                System.out.println("SmaLatencyScoreStrategyImpl.addSample(): " + sample);
                 if (!latencies.offer(sample)) {
                     try {
                         latencies.remove();
@@ -52,7 +51,6 @@ public class SmaLatencyScoreStrategyImpl extends AbstractLatencyScoreStrategyImp
     
             @Override
             public void reset() {
-                System.out.println("SmaLatencyScoreStrategyImpl.reset()");
                 latencies.clear();
             }
     
@@ -62,7 +60,6 @@ public class SmaLatencyScoreStrategyImpl extends AbstractLatencyScoreStrategyImp
             }
     
             private double getMean() {
-                System.out.println("SmaLatencyScoreStrategyImpl.getMean()");
                 long sum = 0;
                 int count = 0;
                 for (long d : latencies) {

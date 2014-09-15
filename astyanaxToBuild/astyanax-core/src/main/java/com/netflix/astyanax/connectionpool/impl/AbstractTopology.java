@@ -38,7 +38,6 @@ public class AbstractTopology<CL> implements Topology<CL> {
     public synchronized boolean setPools(Collection<HostConnectionPool<CL>> ring) {
         boolean didChange = false;
         Set<HostConnectionPool<CL>> allPools = Sets.newHashSet();
-        System.out.println("AbstractTopology.setPools()");
         // Create a mapping of end token to a list of hosts that own the token
         for (HostConnectionPool<CL> pool : ring) {
             allPools.add(pool);
@@ -51,19 +50,16 @@ public class AbstractTopology<CL> implements Topology<CL> {
 
     @Override
     public synchronized void resumePool(HostConnectionPool<CL> pool) {
-        System.out.println("AbstractTopology.resumePool()");
         refresh();
     }
 
     @Override
     public synchronized void suspendPool(HostConnectionPool<CL> pool) {
-        System.out.println("AbstractTopology.suspendPool()");
         refresh();
     }
 
     @Override
     public synchronized void refresh() {
-        System.out.println("AbstractTopology.refresh()");
         allPools.refresh();
     }
 
@@ -84,14 +80,12 @@ public class AbstractTopology<CL> implements Topology<CL> {
 
     @Override
     public synchronized void removePool(HostConnectionPool<CL> pool) {
-        System.out.println("AbstractTopology.removePool()");
         allPools.removePool(pool);
         refresh();
     }
 
     @Override
     public synchronized void addPool(HostConnectionPool<CL> pool) {
-        System.out.println("AbstractTopology.addPool()");
         allPools.addPool(pool);
         allPools.refresh();
     }

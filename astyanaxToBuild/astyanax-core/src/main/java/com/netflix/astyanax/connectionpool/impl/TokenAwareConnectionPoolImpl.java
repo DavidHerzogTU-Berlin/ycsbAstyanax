@@ -51,13 +51,11 @@ public class TokenAwareConnectionPoolImpl<CL> extends AbstractHostPartitionConne
     public TokenAwareConnectionPoolImpl(ConnectionPoolConfiguration configuration, ConnectionFactory<CL> factory,
             ConnectionPoolMonitor monitor) {
         super(configuration, factory, monitor);
-        System.out.println("TokenAwareConnectionPoolImpl()");
     }
 
     @SuppressWarnings("unchecked")
     public <R> ExecuteWithFailover<CL, R> newExecuteWithFailover(Operation<CL, R> op) throws ConnectionException {
         try {
-            System.out.println("TokenAwareConnectionPoolImpl.newExecuteWithFailover()");
             List<HostConnectionPool<CL>> pools;
             boolean isSorted = false;
     

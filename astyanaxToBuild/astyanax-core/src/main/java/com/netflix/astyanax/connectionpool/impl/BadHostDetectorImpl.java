@@ -54,7 +54,6 @@ public class BadHostDetectorImpl implements BadHostDetector {
 				long currentTimeMillis = System.currentTimeMillis();
 				
 				timeouts.add(currentTimeMillis);
-				System.out.println("----------BadHostDetector----------");
 				// Determine if the host exceeded timeoutCounter exceptions in
 				// the timeoutWindow, in which case this is determined to be a
 				// failuresubl

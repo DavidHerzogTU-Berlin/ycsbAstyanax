@@ -117,14 +117,6 @@ public class HostConnectionPoolPartition<CL> {
      * Refresh the partition 
      */
     public synchronized void refresh() {
-       /** Exception except = new Exception();
-        try 
-        {
-            throw except;
-
-        } catch(Exception e) {
-            e.printStackTrace();
-        }**/
         List<HostConnectionPool<CL>> pools = Lists.newArrayList();
         for (HostConnectionPool<CL> pool : this.pools) {
             if (!pool.isReconnecting()) {

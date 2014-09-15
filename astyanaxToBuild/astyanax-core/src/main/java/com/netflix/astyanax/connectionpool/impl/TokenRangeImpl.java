@@ -16,7 +16,7 @@
 package com.netflix.astyanax.connectionpool.impl;
 
 import java.util.List;
-
+import java.util.Collections;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.netflix.astyanax.connectionpool.TokenRange;
@@ -36,7 +36,7 @@ public class TokenRangeImpl implements TokenRange {
         this.startToken = startToken;
         this.endToken = endToken;
         if (endpoints != null)
-            this.endpoints = ImmutableList.copyOf(endpoints);
+            this.endpoints = Collections.unmodifiableList(endpoints);
         else 
             this.endpoints = Lists.newArrayList();
     }
