@@ -539,7 +539,7 @@ public class SimpleHostConnectionPool<CL> implements HostConnectionPool<CL> {
     @Override
     public double getScore() {
     	if(latencyStrategy.getName() == "EMAC") {
-    		return PendingRequestMap.getScoreForHost(host.getIpAddress());
+    		return 1;
     	}
     	else
     		return latencyStrategy.getScore();
@@ -548,7 +548,6 @@ public class SimpleHostConnectionPool<CL> implements HostConnectionPool<CL> {
     @Override
     public void addLatencySample(long latency, long now) {
     	if(latencyStrategy.getName() == "EMAC") {
-
     		//PendingRequestMap.addRTsample(host.getIpAddress(), Double.valueOf(latency));
         }
     	else 

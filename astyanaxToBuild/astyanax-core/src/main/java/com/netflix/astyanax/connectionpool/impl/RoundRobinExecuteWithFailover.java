@@ -121,16 +121,14 @@ public class RoundRobinExecuteWithFailover<CL, R> extends
                 if( pools != null ) {
                     SimpleActorMessage<CL> simpleActorMessage = new SimpleActorMessage<CL>(pools);
                     Future<Object> future = ask(actor, simpleActorMessage, timeout);
-                    System.out.println("round robin borrow conn");
-                    //RoundRobinExecuteWithFailover<CL, R> result = future.result(Duration.apply(Duration.Undefined()));
                     SimpleActorMessage<CL> result =  (SimpleActorMessage<CL> ) Await.result(future, timeout.duration());
                     if( result != null){
                         //if(rrObj instanceof String)
-                            System.out.println("the future is there, answer us! : ");
+                          /**  System.out.println("the future is there, answer us! : ");
                             for (InetAddress ip : ipAddressList) {
                                 System.out.println(ip.getHostAddress()+ " : " +PendingRequestMap.getScoreForHost(ip.getHostAddress()));
                             }
-                            System.out.println("the best node: " + result.getPools().get(0).getHost().getIpAddress());
+                            System.out.println("the best node: " + result.getPools().get(0).getHost().getIpAddress());**/
                         return result.getPools().get(0).borrowConnection(waitDelta * waitMultiplier);
                     }
                 }

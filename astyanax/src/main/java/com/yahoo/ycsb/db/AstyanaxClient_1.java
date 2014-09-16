@@ -67,7 +67,7 @@ public class AstyanaxClient_1 extends DB {
 	public static final String NODE_DISCOVERY_PROPERTY_DEFAULT = "RING_DESCRIBE";
 
 	public static final String CONNECTION_POOL_PROPERTY = "connectionPoolType";
-	public static final String CONNECTION_POOL_PROPERTY_DEFAULT = "ROUND_ROBIN";
+	public static final String CONNECTION_POOL_PROPERTY_DEFAULT = "TOKEN_AWARE";
 
 	public static final String SEED_PROPERTY = "seeds";
 	public static final String SEED_PROPERTY_DEFAULT = "127.0.0.1:9160,127.0.0.2:9160,127.0.0.3:9160";
@@ -88,6 +88,7 @@ public class AstyanaxClient_1 extends DB {
 	private static Keyspace keyspace;
 	private static Object lock = new Object();
 	private static boolean needTotSetInit = true;
+	private String latencyScoreStrategy;
 	static final ListeningExecutorService pool = MoreExecutors
 			.listeningDecorator(Executors.newCachedThreadPool());
 
@@ -103,7 +104,7 @@ public class AstyanaxClient_1 extends DB {
 			ConnectionPoolConfigurationImpl connectionPoolConfig = new ConnectionPoolConfigurationImpl(getProperties()
 					.getProperty(SCORE_STRATEGY, SCORE_STRATEGY_DEFAULT));
 
-			String latencyScoreStrategy = getProperties().getProperty(SCORE_STRATEGY, SCORE_STRATEGY_DEFAULT);
+			latencyScoreStrategy = getProperties().getProperty(SCORE_STRATEGY, SCORE_STRATEGY_DEFAULT);
 			if(latencyScoreStrategy.equals("continuous")) {
 				connectionPoolConfig.setLatencyScoreStrategy(new EmaLatencyScoreContinuousStrategyImpl());
 			} else {
@@ -255,17 +256,20 @@ public class AstyanaxClient_1 extends DB {
 						columns.getColumnByName(s)
 						.getStringValue()));
 				} 
-				String ip = opresult.getHost().getIpAddress();
-				double mu = 0;
-				int qsz = 0;
-				double latency = (double) opresult.getLatency();
-				 if (columns.getColumnByName("MU") != null) {
-					 mu = Double.valueOf(columns.getColumnByName("MU").getStringValue());
-                 }
-                 if (columns.getColumnByName("QSZ") != null) {
-                	 qsz = Integer.valueOf(columns.getColumnByName("QSZ").getStringValue());
-                 }
-                 PendingRequestMap.addSamples(ip, mu, qsz, latency);
+				if(latencyScoreStrategy.equals("continuous")) {
+					String ip = opresult.getHost().getIpAddress();
+					double mu = 0;
+					int qsz = 0;
+					double latency = (double) opresult.getLatency();
+					 if (columns.getColumnByName("MU") != null) {
+						 mu = Double.valueOf(columns.getColumnByName("MU").getStringValue());
+	                 }
+	                 if (columns.getColumnByName("QSZ") != null) {
+	                	 qsz = Integer.valueOf(columns.getColumnByName("QSZ").getStringValue());
+	                 }
+	                 PendingRequestMap.addSamples(ip, mu, qsz, latency);
+				}
+				
                  
 			} else {
 				
@@ -279,17 +283,20 @@ public class AstyanaxClient_1 extends DB {
 						columns.getColumnByName(s)
 						.getStringValue()));
 				}
-				String ip = opresult.getHost().getIpAddress();
-				double mu = 0;
-				int qsz = 0;
-				double latency = (double) opresult.getLatency();
-				 if (columns.getColumnByName("MU") != null) {
-					 mu = Double.valueOf(columns.getColumnByName("MU").getStringValue());
-                 }
-                 if (columns.getColumnByName("QSZ") != null) {
-                	 qsz = Integer.valueOf(columns.getColumnByName("QSZ").getStringValue());
-                 }
-                 PendingRequestMap.addSamples(ip, mu, qsz, latency);
+				if(latencyScoreStrategy.equals("continuous")) {
+					String ip = opresult.getHost().getIpAddress();
+					double mu = 0;
+					int qsz = 0;
+					double latency = (double) opresult.getLatency();
+					 if (columns.getColumnByName("MU") != null) {
+						 mu = Double.valueOf(columns.getColumnByName("MU").getStringValue());
+	                 }
+	                 if (columns.getColumnByName("QSZ") != null) {
+	                	 qsz = Integer.valueOf(columns.getColumnByName("QSZ").getStringValue());
+	                 }
+	                 PendingRequestMap.addSamples(ip, mu, qsz, latency);
+				}
+				
 			}
 			return Ok;
 

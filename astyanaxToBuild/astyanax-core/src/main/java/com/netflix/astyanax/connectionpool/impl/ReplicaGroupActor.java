@@ -25,10 +25,19 @@ public class ReplicaGroupActor extends UntypedActorWithStash {
     private final Procedure<Object> WAITING_STATE = new Procedure<Object>() {
         @Override
         public void apply(Object msg) throws Exception {
-            if (msg instanceof  SimpleActorMessage) {
-               System.out.println("ReplicaGroupActor.apply");
-            } else {
-                
+             if (msg instanceof SimpleActorMessage) {
+                switch ((ReplicaGroupActorCommand) msg) {
+                    case UNBLOCK:
+                        getContext().unbecome();
+                        unstashAll();
+                        break;
+                    default:
+                        throw new AssertionError("Received invalid command "
+                                + (ReplicaGroupActorCommand) msg);
+                }
+            }
+            else {
+                stash();
             }
             
         }
@@ -41,12 +50,36 @@ public class ReplicaGroupActor extends UntypedActorWithStash {
             //System.out.println("on Receive: instance of HostConnectionPool");
             long durationToWait = 0;
             SimpleActorMessage simpleActorMessage = (SimpleActorMessage) msg;
-            Collections.sort(simpleActorMessage.getPools(), scoreComparator);
-            getSender().tell(msg, getSelf());
-            assert (durationToWait >= 0);
-            if (durationToWait > 0) {
+            List<HostConnectionPool<?>> hostList = simpleActorMessage.getPools();
+            Collections.sort(hostList, scoreComparator);
+            int dataEndpointIndex = 0;
+            double minimumDurationToWait = Double.MAX_VALUE;
+            boolean shouldWait = true;
+            for(int i = 0; i < hostList.size(); i++) {
+                final String ep = hostList.get(i).getHost().getIpAddress();
+                double timeToNextRefill = 0L;
+                timeToNextRefill = PendingRequestMap.getRateLimit(ep);
+                
+                if (timeToNextRefill == 0L) {
+                    dataEndpointIndex = i;
+                    shouldWait = false;
+
+                    // Other parts of the code require this endpoint-mapping
+                    // to be ordered such that the data-endpoint is the first
+                    // one. Let's do that now itself.
+                    Collections.<HostConnectionPool<?>>swap(hostList, dataEndpointIndex, 0);
+                    break;
+                }
+
+                minimumDurationToWait = Math.min(minimumDurationToWait, timeToNextRefill);
+            }
+
+            assert ((long) minimumDurationToWait >= 0);
+            if (shouldWait && minimumDurationToWait > 0) {
                 stash();
-                switchToWaiting(durationToWait);
+                switchToWaiting((long)minimumDurationToWait);
+            } else {
+                getSender().tell(msg, getSelf());
             }
         }
     }
@@ -69,12 +102,12 @@ public class ReplicaGroupActor extends UntypedActorWithStash {
     private void switchToWaiting(final long durationToWait) {
         System.out.println("Switching to waiting " + durationToWait);
         getContext().become(WAITING_STATE, false);
-       /** getContext().system().scheduler().scheduleOnce(
+        getContext().system().scheduler().scheduleOnce(
                 Duration.create(durationToWait, TimeUnit.NANOSECONDS),
                 getSelf(),
                 ReplicaGroupActorCommand.UNBLOCK,
                 getContext().system().dispatcher(),
-                null);**/
+                null);
     }
 
 }

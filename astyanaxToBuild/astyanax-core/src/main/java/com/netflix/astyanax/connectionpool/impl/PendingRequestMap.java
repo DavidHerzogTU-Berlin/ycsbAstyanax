@@ -85,6 +85,7 @@ public class PendingRequestMap {
 				scoreMap.putIfAbsent(endpoint, new SendReceiveRateContainer(endpoint));
 				cached = scoreMap.get(endpoint);
 			}
+			cached.updateCubicSendingRate();
 			cached.updateNodeScore(qsz, mu, responseTime);
 
 		} catch (UnknownHostException e) {
@@ -92,7 +93,22 @@ public class PendingRequestMap {
 		}
 		
 	}
+	public static double getRateLimit(String ip) {
+		try {
+			InetAddress endpoint = InetAddress.getByName(ip);
+			SendReceiveRateContainer cached = scoreMap.get(endpoint);
+			if (cached == null) {
+				scoreMap.putIfAbsent(endpoint, new SendReceiveRateContainer(endpoint));
+				cached = scoreMap.get(endpoint);
+			}
+			
+			return cached.tryAcquire();
 
+		} catch (UnknownHostException e) {
+			System.out.println(e);
+		}
+		return 0;
+	}
 	/**public static void addMUSample(String ip, double sample) {
 		AtomicDouble cached = muEmaMap.get(ip);
 		if (cached == null) {
