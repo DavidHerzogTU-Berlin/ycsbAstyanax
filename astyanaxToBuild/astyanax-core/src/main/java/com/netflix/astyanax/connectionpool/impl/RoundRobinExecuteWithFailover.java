@@ -80,11 +80,9 @@ public class RoundRobinExecuteWithFailover<CL, R> extends
 
 	public int getNextHostIndex() {
 		// No RR anymore: Get the node with the best score.
-		if (this.config.getName() == "continuous") {
+		if (this.config.getName().equals("continuous")) {
 			return 0;
-		}
-
-		else {
+		} else {
 			try {
 				return index % size;
 			} finally {
@@ -107,7 +105,7 @@ public class RoundRobinExecuteWithFailover<CL, R> extends
 	@Override
 	public Connection<CL> borrowConnection(Operation<CL, R> operation)
 			throws ConnectionException {
-        if (this.config.getName() == "continuous") {
+        if (this.config.getName().equals("continuous")) {
             List<InetAddress> ipAddressList = new LinkedList<InetAddress>();
           
             try {
@@ -123,12 +121,6 @@ public class RoundRobinExecuteWithFailover<CL, R> extends
                     Future<Object> future = ask(actor, simpleActorMessage, timeout);
                     SimpleActorMessage<CL> result =  (SimpleActorMessage<CL> ) Await.result(future, timeout.duration());
                     if( result != null){
-                        //if(rrObj instanceof String)
-                          /**  System.out.println("the future is there, answer us! : ");
-                            for (InetAddress ip : ipAddressList) {
-                                System.out.println(ip.getHostAddress()+ " : " +PendingRequestMap.getScoreForHost(ip.getHostAddress()));
-                            }
-                            System.out.println("the best node: " + result.getPools().get(0).getHost().getIpAddress());**/
                         return result.getPools().get(0).borrowConnection(waitDelta * waitMultiplier);
                     }
                 }

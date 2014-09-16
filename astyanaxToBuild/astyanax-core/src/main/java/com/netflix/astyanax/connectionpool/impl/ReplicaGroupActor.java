@@ -25,7 +25,7 @@ public class ReplicaGroupActor extends UntypedActorWithStash {
     private final Procedure<Object> WAITING_STATE = new Procedure<Object>() {
         @Override
         public void apply(Object msg) throws Exception {
-             if (msg instanceof SimpleActorMessage) {
+             if (msg instanceof ReplicaGroupActorCommand) {
                 switch ((ReplicaGroupActorCommand) msg) {
                     case UNBLOCK:
                         getContext().unbecome();
@@ -46,8 +46,6 @@ public class ReplicaGroupActor extends UntypedActorWithStash {
     @Override
     public void onReceive(Object msg) {
         if (msg instanceof SimpleActorMessage) {
-            //long durationToWait = (long) ((ConnectionPoolConfigurationImpl) msg);
-            //System.out.println("on Receive: instance of HostConnectionPool");
             long durationToWait = 0;
             SimpleActorMessage simpleActorMessage = (SimpleActorMessage) msg;
             List<HostConnectionPool<?>> hostList = simpleActorMessage.getPools();
@@ -100,7 +98,7 @@ public class ReplicaGroupActor extends UntypedActorWithStash {
     };
 
     private void switchToWaiting(final long durationToWait) {
-        System.out.println("Switching to waiting " + durationToWait);
+        System.out.println("Switching to waiting " + durationToWait );
         getContext().become(WAITING_STATE, false);
         getContext().system().scheduler().scheduleOnce(
                 Duration.create(durationToWait, TimeUnit.NANOSECONDS),

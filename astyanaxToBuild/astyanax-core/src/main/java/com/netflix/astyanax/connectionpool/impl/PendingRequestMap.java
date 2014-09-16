@@ -34,16 +34,17 @@ public class PendingRequestMap {
 					+ "  throughput = 10\n" + "}\n");
 	private static final ActorSystem actorSystem = ActorSystem.create(
 			"Machete", config);
+	private static double map_size;
 
-	private static ConcurrentHashMap<String, AtomicDouble> qszEmaMap = new ConcurrentHashMap<String, AtomicDouble>();
-	private static ConcurrentHashMap<String, AtomicDouble> muEmaMap = new ConcurrentHashMap<String, AtomicDouble>();
-	private static ConcurrentHashMap<String, AtomicDouble> rtMap = new ConcurrentHashMap<String, AtomicDouble>();
-	private static ConcurrentHashMap<String, AtomicDouble> nwMap = new ConcurrentHashMap<String, AtomicDouble>();
-
-	private static double c = 1;
-	private final static double k = .9; // value for calculation
-	private final static double one_minus_k = .1; // value for calculation
 	private static Object lock = new Object();
+
+	public static double getMap_size() {
+		return map_size;
+	}
+
+	public static void setMap_size(double map_sizE) {
+		map_size = map_sizE;
+	}
 
 	 public static ActorRef getReplicaGroupActor(List<InetAddress> endpoints) {
         final InetAddress rgOwner = endpoints.get(0);
@@ -85,11 +86,12 @@ public class PendingRequestMap {
 				scoreMap.putIfAbsent(endpoint, new SendReceiveRateContainer(endpoint));
 				cached = scoreMap.get(endpoint);
 			}
+			cached.receiveRateTrackerTick();
 			cached.updateCubicSendingRate();
 			cached.updateNodeScore(qsz, mu, responseTime);
 
 		} catch (UnknownHostException e) {
-			System.out.println(e);
+			e.printStackTrace();
 		}
 		
 	}
@@ -105,47 +107,11 @@ public class PendingRequestMap {
 			return cached.tryAcquire();
 
 		} catch (UnknownHostException e) {
-			System.out.println(e);
+			e.printStackTrace();
 		}
 		return 0;
 	}
-	/**public static void addMUSample(String ip, double sample) {
-		AtomicDouble cached = muEmaMap.get(ip);
-		if (cached == null) {
-			muEmaMap.putIfAbsent(ip, new AtomicDouble(0));
-			cached = muEmaMap.get(ip);
-		}
-		cached.set(sample * k + cached.get() * one_minus_k);
-	}
-
-	public static void addQSZsample(String ip, double sample) {
-		AtomicDouble cached = qszEmaMap.get(ip);
-		if (cached == null) {
-			qszEmaMap.putIfAbsent(ip, new AtomicDouble(0));
-			cached = qszEmaMap.get(ip);
-		}
-		cached.set(sample * k + cached.get() * one_minus_k);
-	}
-
 	
-
-	public static void addRTsample(String ip, double sample) {
-		AtomicDouble cached = rtMap.get(ip);
-		if (cached == null) {
-			rtMap.putIfAbsent(ip, new AtomicDouble(0));
-			cached = rtMap.get(ip);
-		}
-		cached.set(sample * k + cached.get() * one_minus_k);
-
-	}
-
-	public static double getnw(String ip) {
-		if (rtMap.get(ip) == null || muEmaMap.get(ip) == null)
-			return 0;
-		else
-			return rtMap.get(ip).get() - muEmaMap.get(ip).get();
-	}
-**/
 	public static double getScoreForHost(String ip) {
 		try {
 			InetAddress endpoint = InetAddress.getByName(ip);
@@ -156,7 +122,7 @@ public class PendingRequestMap {
 			}
 			
 		} catch(UnknownHostException e) {
-
+			e.printStackTrace();
 		}
 		return -1;
 	}
@@ -170,7 +136,7 @@ public class PendingRequestMap {
 			}
 			count.incrementAndGet();
 		} catch(UnknownHostException e) {
-
+			e.printStackTrace();
 		}
 		
 
@@ -185,7 +151,7 @@ public class PendingRequestMap {
 			}
 			count.decrementAndGet();
 		} catch(UnknownHostException e) {
-
+			e.printStackTrace();
 		}
 	}
 
@@ -193,7 +159,7 @@ public class PendingRequestMap {
 		try {
 			return pendingRequestMap.get(InetAddress.getByName(ip)).get();
 		} catch(UnknownHostException e) {
-
+			e.printStackTrace();
 		}
 		return -1;
 	}
@@ -202,7 +168,7 @@ public class PendingRequestMap {
 		try {
 			return pendingRequestMap.get(InetAddress.getByName(ip));
 		} catch(UnknownHostException e) {
-
+			e.printStackTrace();
 		}
 		return new AtomicInteger(-1);
 	}

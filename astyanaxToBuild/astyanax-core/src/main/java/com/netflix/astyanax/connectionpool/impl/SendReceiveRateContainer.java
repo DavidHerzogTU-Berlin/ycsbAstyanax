@@ -58,16 +58,13 @@ public class SendReceiveRateContainer {
             emaNw = SCORE_EMA_ALPHA * nwRtt  + ONE_MINUS_SCORE_EMA_ALPHA * emaNw;
             assert (feedbackMu < feedbackResponseTime);
         }
-        public synchronized void updateMUandQSZ(int feedbackQSZ, double feedbackMu) {
-            emaQSZ = SCORE_EMA_ALPHA * feedbackQSZ  + ONE_MINUS_SCORE_EMA_ALPHA * emaQSZ;
-            emaMu = SCORE_EMA_ALPHA * feedbackMu  + ONE_MINUS_SCORE_EMA_ALPHA * emaMu;
-        }
+        
         public synchronized double getScore() {
             AtomicInteger counter = PendingRequestMap.getPendingRequestsAtomic(endpoint.getHostAddress());
             if (counter == null) {
                 return 0.0;
             }
-            return emaNw + Math.pow(1 + emaQSZ + (PendingRequestMap.getPendingRequestsMapSize()* counter.get()), 3) * emaMu;
+            return emaNw + Math.pow(1 + emaQSZ + (PendingRequestMap.getMap_size()* counter.get()), 3) * emaMu;
         }
 
         public synchronized void updateCubicSendingRate() {
@@ -95,10 +92,5 @@ public class SendReceiveRateContainer {
 
                 assert(newSendingRate > 0);
             }
-
-            System.out.println(System.currentTimeMillis() + " " + endpoint +
-                        " OldRate: " + currentSendingRate +
-                        " NewRate: " + sendingRateLimiter.getRate() +
-                        " ReceiveRate: " + currentReceiveRate);
         }
     }

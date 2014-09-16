@@ -84,6 +84,9 @@ public class AstyanaxClient_1 extends DB {
 	public static final String SCORE_STRATEGY = "scoreStrategy";
 	public static final String SCORE_STRATEGY_DEFAULT = "continuous";
 	
+	public static final String MAP_SIZE = "map_size";
+	public static final String MAP_SIZE_DEFAULT = "crash";
+
 	private static AstyanaxContext<Keyspace> context;
 	private static Keyspace keyspace;
 	private static Object lock = new Object();
@@ -93,6 +96,11 @@ public class AstyanaxClient_1 extends DB {
 			.listeningDecorator(Executors.newCachedThreadPool());
 
 	public void init() throws DBException {
+		String map_size_String = getProperties().getProperty(MAP_SIZE, MAP_SIZE_DEFAULT);
+		assert (!map_size_String.equals("crash"));
+		Double map_size = Double.valueOf(map_size_String);
+		assert (map_size >= 0);
+		PendingRequestMap.setMap_size(map_size);
 		syncInit();
 
 	}

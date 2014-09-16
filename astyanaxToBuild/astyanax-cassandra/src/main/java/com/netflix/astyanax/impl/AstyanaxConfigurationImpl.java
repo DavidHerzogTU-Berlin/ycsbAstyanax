@@ -68,7 +68,6 @@ public class AstyanaxConfigurationImpl implements AstyanaxConfiguration {
 
     public AstyanaxConfigurationImpl setConnectionPoolType(ConnectionPoolType connectionPoolType) {
         this.connectionPoolType = connectionPoolType;
-        System.out.println("setConnectionPoolType " + connectionPoolType.toString());
         return this;
     }
 

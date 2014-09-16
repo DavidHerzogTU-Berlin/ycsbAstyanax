@@ -17,7 +17,7 @@ public class Client_1Test {
   	@Test
 	public void insertReadDeleteTest() {
 		
-		try{
+		/**try{
 			AstyanaxClient_1 ac1 = new AstyanaxClient_1();
 			ac1.init();
 			HashMap<String, ByteIterator> values = new HashMap<String, ByteIterator>();
@@ -74,7 +74,7 @@ public class Client_1Test {
 //				for (String column : hashMap.keySet()) {
 //					System.out.println("Column: " + column + " Value: " + result.get(column) );
 //				}
-//			}**/
+//			}
 			assertEquals(0, ac1.delete("data", "HansBradley"));
 			assertEquals(0, ac1.delete("data", "HansBradley1"));
 			assertEquals(0, ac1.delete("data", "HansBradley2"));
@@ -88,7 +88,8 @@ public class Client_1Test {
 		}catch (Exception e) {
 			System.out.println(e);
 		
-		} 
+		}**/
+
 	}
 
 }

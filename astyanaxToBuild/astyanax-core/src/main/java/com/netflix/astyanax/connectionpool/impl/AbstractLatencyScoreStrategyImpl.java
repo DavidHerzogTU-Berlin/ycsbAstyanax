@@ -85,7 +85,7 @@ public abstract class AbstractLatencyScoreStrategyImpl implements LatencyScoreSt
 
     @Override
     public void start(final Listener listener) {
-        if (name != "EMAC") {
+        if (!name.equals("EMAC")) {
             if (updateInterval > 0) {
                 executor.schedule(new Runnable() {
                     @Override
@@ -170,7 +170,7 @@ public abstract class AbstractLatencyScoreStrategyImpl implements LatencyScoreSt
                 iter.remove();
             }
         }
-       if (name != "EMAC") {
+       if (!name.equals("EMAC")) {
 	//step 2  
             if (pools.size() > 0) {
                 // Step 3: Filter out hosts that are too slow and keep at least the best keepRatio hosts
@@ -179,13 +179,10 @@ public abstract class AbstractLatencyScoreStrategyImpl implements LatencyScoreSt
                 
                 if (first < pools.size()) {
                     double scoreFirst = pools.get(first).getScore();
-                    System.out.println("First : " + scoreFirst);
                     if (scoreFirst > 0.0) {
                         for (int i = pools.size() - 1; i >= keep && i > first; i--) {
                             HostConnectionPool<CL> pool  = pools.get(i);
-                            System.out.println(i + " : " + pool.getScore() + " threshold:" + getScoreThreshold());
                             if ((pool.getScore() / scoreFirst) > getScoreThreshold()) {
-                                System.out.println("**** Removing host (score) : " + pool.toString());
                                 pools.remove(i);
                             }
                             else {
@@ -204,7 +201,6 @@ public abstract class AbstractLatencyScoreStrategyImpl implements LatencyScoreSt
                     HostConnectionPool<CL> pool  = pools.get(i);
                     int busy = pool.getBusyConnectionCount() + pool.getBlockedThreadCount();
                     if ( (busy - firstBusy) > getBlockedThreshold()) {
-                        System.out.println("**** Removing host (blocked) : " + pool.toString());
                         pools.remove(i);
                     }
                 }
