@@ -105,7 +105,9 @@ public class RoundRobinExecuteWithFailover<CL, R> extends
 	@Override
 	public Connection<CL> borrowConnection(Operation<CL, R> operation)
 			throws ConnectionException {
-        if (this.config.getName().equals("continuous")) {
+
+	
+        if (this.config.getName().equals("continuous") && operation.getClass().getName().contains("ThriftColumnFamilyQueryImpl")) {
             List<InetAddress> ipAddressList = new LinkedList<InetAddress>();
           
             try {
