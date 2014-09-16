@@ -547,8 +547,10 @@ public class SimpleHostConnectionPool<CL> implements HostConnectionPool<CL> {
 
     @Override
     public void addLatencySample(long latency, long now) {
-    	if(latencyStrategy.getName() == "EMAC")
-    		PendingRequestMap.addRTsample(host.getIpAddress(), Double.valueOf(latency));
+    	if(latencyStrategy.getName() == "EMAC") {
+
+    		//PendingRequestMap.addRTsample(host.getIpAddress(), Double.valueOf(latency));
+        }
     	else 
     		latencyStrategy.addSample(latency);    
     }

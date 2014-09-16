@@ -98,7 +98,6 @@ public class ThriftColumnFamilyQueryImpl<K, C> implements ColumnFamilyQuery<K, C
     final ListeningExecutorService         executor;
     Host                                   pinnedHost;
     RetryPolicy                            retry;
-
     public ThriftColumnFamilyQueryImpl(ExecutorService executor, KeyspaceTracerFactory tracerFactory,
             ThriftKeyspaceImpl keyspace, ConnectionPool<Cassandra.Client> cp, ColumnFamily<K, C> columnFamily,
             ConsistencyLevel consistencyLevel, RetryPolicy retry) {
@@ -110,7 +109,7 @@ public class ThriftColumnFamilyQueryImpl<K, C> implements ColumnFamilyQuery<K, C
         this.executor = MoreExecutors.listeningDecorator(executor);
         this.retry = retry;
     }
-
+    
     // Single ROW query
     @Override
     public RowQuery<K, C> getKey(final K rowKey) {
@@ -226,7 +225,7 @@ public class ThriftColumnFamilyQueryImpl<K, C> implements ColumnFamilyQuery<K, C
                                         if (!columnList.isEmpty())
                                             columnList.remove(0);
                                     }
-
+                                   
                                     // Set the start column for the next page to
                                     // the last column of this page.
                                     // We will discard this column later.
@@ -250,14 +249,14 @@ public class ThriftColumnFamilyQueryImpl<K, C> implements ColumnFamilyQuery<K, C
                                 ColumnList<C> result = new ThriftColumnOrSuperColumnListImpl<C>(columnList,
                                         columnFamily.getColumnSerializer());
                              
-                                if (result.getColumnByName((C) "MU") != null) {
+                               /** if (result.getColumnByName((C) "MU") != null) {
                                 	PendingRequestMap.addMUSample(context.toString() , 
                             				Double.valueOf(result.getColumnByName( (C) "MU").getStringValue()) );
                                 }
                                 if (result.getColumnByName((C) "QSZ") != null) {
                                 	PendingRequestMap.addQSZsample(context.toString() , 
                             				Double.valueOf(result.getColumnByName( (C) "QSZ").getStringValue()) );
-                                }
+                                }**/
                                 return result;
                             }
                             

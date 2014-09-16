@@ -16,12 +16,15 @@ import java.net.InetAddress;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import java.net.UnknownHostException;
+
 public class PendingRequestMap {
 
 	private static final ConcurrentHashMap<InetAddress, ActorRef> actorMap = new ConcurrentHashMap<InetAddress, ActorRef>();
     private static final ConcurrentHashMap<InetAddress, CopyOnWriteArrayList<String>> rgInvertedInex = new ConcurrentHashMap<InetAddress, CopyOnWriteArrayList<String>>();
 
-	private static ConcurrentHashMap<String, AtomicInteger> pendingRequestMap = new ConcurrentHashMap<String, AtomicInteger>();
+	private static ConcurrentHashMap<InetAddress, SendReceiveRateContainer> scoreMap = new ConcurrentHashMap<InetAddress, SendReceiveRateContainer>();
+	private static ConcurrentHashMap<InetAddress, AtomicInteger > pendingRequestMap = new ConcurrentHashMap<InetAddress, AtomicInteger >();
 	private static final Config config = ConfigFactory
 			.parseString("my-dispatcher {\n" + "  type = Dispatcher\n"
 					+ "  executor = \"fork-join-executor\"\n"
@@ -74,7 +77,23 @@ public class PendingRequestMap {
 		return actorSystem;
 	}
 
-	public static void addMUSample(String ip, double sample) {
+	public static void addSamples(String ip, double mu, int qsz, double responseTime) {
+		try {
+			InetAddress endpoint = InetAddress.getByName(ip);
+			SendReceiveRateContainer cached = scoreMap.get(endpoint);
+			if (cached == null) {
+				scoreMap.putIfAbsent(endpoint, new SendReceiveRateContainer(endpoint));
+				cached = scoreMap.get(endpoint);
+			}
+			cached.updateNodeScore(qsz, mu, responseTime);
+
+		} catch (UnknownHostException e) {
+			System.out.println(e);
+		}
+		
+	}
+
+	/**public static void addMUSample(String ip, double sample) {
 		AtomicDouble cached = muEmaMap.get(ip);
 		if (cached == null) {
 			muEmaMap.putIfAbsent(ip, new AtomicDouble(0));
@@ -110,44 +129,66 @@ public class PendingRequestMap {
 		else
 			return rtMap.get(ip).get() - muEmaMap.get(ip).get();
 	}
-
+**/
 	public static double getScoreForHost(String ip) {
-		if ( pendingRequestMap.get(ip) == null || qszEmaMap.get(ip) == null
-				|| muEmaMap.get(ip) == null)
-			return 0;
-		else
-			return getnw(ip)
-					+ Math.pow(
-							(1 + pendingRequestMap.get(ip).get() * c + qszEmaMap
-									.get(ip).get()), 3)
-					* muEmaMap.get(ip).get();
+		try {
+			InetAddress endpoint = InetAddress.getByName(ip);
+			if(scoreMap.get(endpoint) == null) {
+				return 0;
+			} else {
+				return scoreMap.get(endpoint).getScore();
+			}
+			
+		} catch(UnknownHostException e) {
+
+		}
+		return -1;
 	}
 
 	public static void incrementPendingRequest(String ip) {
-		AtomicInteger count = pendingRequestMap.get(ip);
-		if (count == null) {
-			pendingRequestMap.putIfAbsent(ip, new AtomicInteger(0));
-			count = pendingRequestMap.get(ip);
+		try {
+			AtomicInteger count = pendingRequestMap.get(InetAddress.getByName(ip));
+			if (count == null) {
+				pendingRequestMap.putIfAbsent(InetAddress.getByName(ip), new AtomicInteger(0));
+				count = pendingRequestMap.get(InetAddress.getByName(ip));
+			}
+			count.incrementAndGet();
+		} catch(UnknownHostException e) {
+
 		}
-		count.incrementAndGet();
+		
 
 	}
 
 	public static void decrementPendingRequest(String ip) {
-		AtomicInteger count = pendingRequestMap.get(ip);
-		if (count == null) {
-			pendingRequestMap.putIfAbsent(ip, new AtomicInteger(0));
-			count = pendingRequestMap.get(ip);
+		try {
+			AtomicInteger count = pendingRequestMap.get(InetAddress.getByName(ip));
+			if (count == null) {
+				pendingRequestMap.putIfAbsent(InetAddress.getByName(ip), new AtomicInteger(0));
+				count = pendingRequestMap.get(InetAddress.getByName(ip));
+			}
+			count.decrementAndGet();
+		} catch(UnknownHostException e) {
+
 		}
-		count.decrementAndGet();
 	}
 
 	public static int getPendingRequests(String ip) {
-		return pendingRequestMap.get(ip).get();
+		try {
+			return pendingRequestMap.get(InetAddress.getByName(ip)).get();
+		} catch(UnknownHostException e) {
+
+		}
+		return -1;
 	}
 
 	public static AtomicInteger getPendingRequestsAtomic(String ip) {
-		return pendingRequestMap.get(ip);
+		try {
+			return pendingRequestMap.get(InetAddress.getByName(ip));
+		} catch(UnknownHostException e) {
+
+		}
+		return new AtomicInteger(-1);
 	}
 
 	public static int getPendingRequestsMapSize() {

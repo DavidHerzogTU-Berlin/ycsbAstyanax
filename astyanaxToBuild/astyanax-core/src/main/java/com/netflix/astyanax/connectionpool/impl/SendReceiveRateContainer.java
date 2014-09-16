@@ -58,7 +58,10 @@ public class SendReceiveRateContainer {
             emaNw = SCORE_EMA_ALPHA * nwRtt  + ONE_MINUS_SCORE_EMA_ALPHA * emaNw;
             assert (feedbackMu < feedbackResponseTime);
         }
-
+        public synchronized void updateMUandQSZ(int feedbackQSZ, double feedbackMu) {
+            emaQSZ = SCORE_EMA_ALPHA * feedbackQSZ  + ONE_MINUS_SCORE_EMA_ALPHA * emaQSZ;
+            emaMu = SCORE_EMA_ALPHA * feedbackMu  + ONE_MINUS_SCORE_EMA_ALPHA * emaMu;
+        }
         public synchronized double getScore() {
             AtomicInteger counter = PendingRequestMap.getPendingRequestsAtomic(endpoint.getHostAddress());
             if (counter == null) {

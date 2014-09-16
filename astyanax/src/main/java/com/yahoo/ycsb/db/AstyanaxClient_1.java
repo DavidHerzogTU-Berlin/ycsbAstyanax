@@ -22,6 +22,7 @@ import com.netflix.astyanax.thrift.ThriftFamilyFactory;
 import com.netflix.astyanax.query.IndexQuery;
 import com.netflix.astyanax.model.ConsistencyLevel;
 import com.netflix.astyanax.model.Rows;
+import java.net.InetAddress;
 import com.yahoo.ycsb.*;
 import java.util.Map;
 import java.util.Set;
@@ -39,6 +40,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import com.netflix.astyanax.connectionpool.impl.PendingRequestMap;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
@@ -47,7 +49,7 @@ import com.google.common.util.concurrent.ForwardingListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.netflix.astyanax.connectionpool.exceptions.OperationException;
-
+import com.netflix.astyanax.connectionpool.Host;
 public class AstyanaxClient_1 extends DB {
 	public static final int Ok = 0;
 	public static final int Error = -1;
@@ -62,7 +64,7 @@ public class AstyanaxClient_1 extends DB {
 	public static final String WRITE_CONSISTENCY_LEVEL_PROPERTY_DEFAULT = "ONE";
 
 	public static final String NODE_DISCOVERY_PROPERTY = "discoveryType";
-	public static final String NODE_DISCOVERY_PROPERTY_DEFAULT = "NONE";
+	public static final String NODE_DISCOVERY_PROPERTY_DEFAULT = "RING_DESCRIBE";
 
 	public static final String CONNECTION_POOL_PROPERTY = "connectionPoolType";
 	public static final String CONNECTION_POOL_PROPERTY_DEFAULT = "ROUND_ROBIN";
@@ -243,7 +245,7 @@ public class AstyanaxClient_1 extends DB {
 			HashMap<String, ByteIterator> result) {
 		try {
 			if (fields == null) {
-
+				
 				final OperationResult<ColumnList<String>> opresult = keyspace
 						.prepareQuery(EMP_CF).getKey(key).execute();
 				
@@ -252,8 +254,19 @@ public class AstyanaxClient_1 extends DB {
 					result.put(s, new StringByteIterator(
 						columns.getColumnByName(s)
 						.getStringValue()));
-				}
-
+				} 
+				String ip = opresult.getHost().getIpAddress();
+				double mu = 0;
+				int qsz = 0;
+				double latency = (double) opresult.getLatency();
+				 if (columns.getColumnByName("MU") != null) {
+					 mu = Double.valueOf(columns.getColumnByName("MU").getStringValue());
+                 }
+                 if (columns.getColumnByName("QSZ") != null) {
+                	 qsz = Integer.valueOf(columns.getColumnByName("QSZ").getStringValue());
+                 }
+                 PendingRequestMap.addSamples(ip, mu, qsz, latency);
+                 
 			} else {
 				
 				final OperationResult<ColumnList<String>> opresult = keyspace
@@ -266,6 +279,17 @@ public class AstyanaxClient_1 extends DB {
 						columns.getColumnByName(s)
 						.getStringValue()));
 				}
+				String ip = opresult.getHost().getIpAddress();
+				double mu = 0;
+				int qsz = 0;
+				double latency = (double) opresult.getLatency();
+				 if (columns.getColumnByName("MU") != null) {
+					 mu = Double.valueOf(columns.getColumnByName("MU").getStringValue());
+                 }
+                 if (columns.getColumnByName("QSZ") != null) {
+                	 qsz = Integer.valueOf(columns.getColumnByName("QSZ").getStringValue());
+                 }
+                 PendingRequestMap.addSamples(ip, mu, qsz, latency);
 			}
 			return Ok;
 
