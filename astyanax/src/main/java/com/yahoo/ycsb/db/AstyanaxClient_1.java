@@ -85,7 +85,7 @@ public class AstyanaxClient_1 extends DB {
 	public static final String SCORE_STRATEGY_DEFAULT = "continuous";
 	
 	public static final String MAP_SIZE = "map_size";
-	public static final String MAP_SIZE_DEFAULT = "crash";
+	public static final String MAP_SIZE_DEFAULT = "crash: map_size needs to be set";
 
 	private static AstyanaxContext<Keyspace> context;
 	private static Keyspace keyspace;
