@@ -1,12 +1,12 @@
 ext {
- cassandraVersion = "1.2.11"
+ cassandraVersion = "1.2.18-SNAPSHOT"
  thriftVersion = "0.7.0"
  junitVersion = "4.8.1"
- guavaVersion = "17.0"
+ guavaVersion = "14.0.1"
  jodaTimeVersion = "1.6.2"
  highScaleLibVersion = "1.1.2"
  uuidVersion = "3.2"
- slf4jVersion = "1.7.7"
+ slf4jVersion = "1.6.4"
  jettisonVersion = "1.2"
  commonsCodecVersion = "1.5"
  commonsLangVersion = "2.4"
@@ -19,3 +19,4 @@ ext {
  commonsIOVersion = "2.1"
  javaDriverVersion = "2.0.3"
 }
+

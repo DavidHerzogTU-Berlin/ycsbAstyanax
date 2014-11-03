@@ -67,4 +67,39 @@ task uploadMavenCentral(type:Upload, dependsOn: signArchives) {
                 }
             }
         }
+
+task uploadMavenLocal(type:Upload, dependsOn: signArchives) {
+    configuration = configurations.archives
+    onlyIf { ['release', 'snapshot'].contains(project.status) }
+        repositories.mavenDeployer {
+            beforeDeployment { signing.signPom(it) }
+
+                // To test deployment locally, use the following instead of oss.sonatype.org
+                repository(url: "file://localhost/home/lalith/.m2/repository/")
+
+                // Closure to configure all the POM with extra info, common to all projects
+                pom.project {
+                    name "${project.name}"
+                    description "${project.name} developed by Netflix"
+                    developers {
+                        developer {
+                            id 'netflixgithub'
+                            name 'Netflix Open Source Development'
+                            email 'talent@netflix.com'
+                        }
+                    }
+                    licenses {
+                        license {
+                            name 'The Apache Software License, Version 2.0'
+                            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                            distribution 'repo'
+                        }
+                    }
+                }
+            }
+        }
+
 }
+
+
+

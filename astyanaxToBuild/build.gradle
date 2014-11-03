@@ -5,7 +5,6 @@ buildscript {
     repositories {
         mavenLocal()
         mavenCentral() // maven { url 'http://jcenter.bintray.com' }
-         maven {url "http://repo.akka.io/snapshots/"} //akka
     }
     apply from: file('gradle/buildscript.gradle'), to: buildscript 
 }
@@ -13,10 +12,10 @@ buildscript {
 allprojects {
     repositories { 
         mavenCentral() // maven { url: 'http://jcenter.bintray.com' }
-        maven {url "http://repo.akka.io/snapshots/"} //akka
+        mavenLocal()
     }
 }
-//apply plugin: 'scala' //aka
+
 apply plugin: 'idea'
 apply plugin: 'osgi'
 
@@ -31,17 +30,14 @@ subprojects {
     group = "com.netflix.${githubProjectName}"
 
     apply plugin: 'eclipse'
-    apply plugin: 'idea' //akka
+    apply plugin: 'idea'
 
     dependencies {
         compile "joda-time:joda-time:$jodaTimeVersion"
         compile "com.github.stephenc.high-scale-lib:high-scale-lib:$highScaleLibVersion"
-       // compile ("com.google.guava:guava:$guavaVersion") {
-        //     force = true
-       // }
-        compile group: 'com.google.guava', name: 'guava', version: '17.0'
-        compile 'org.scala-lang:scala-library:2.10.4' //akka
-
+        compile ("com.google.guava:guava:$guavaVersion") {
+             force = true
+        }
         compile "com.eaio.uuid:uuid:$uuidVersion"
         compile "org.slf4j:slf4j-api:$slf4jVersion"
         compile "org.codehaus.jettison:jettison:$jettisonVersion"
@@ -52,18 +48,9 @@ subprojects {
         compile "org.codehaus.jackson:jackson-mapper-asl:$jacksonVersion"
         compile "org.xerial.snappy:snappy-java:$snappyVersion"
         compile "org.apache.cassandra:cassandra-all:$cassandraVersion"
-
-      
         testCompile "junit:junit:$junitVersion"
     }
 }
-//akka
-tasks.withType(ScalaCompile) { 
-scalaCompileOptions.useAnt = false
-}
-//akka
-
-
 
 project(':astyanax') {
     dependencies {
@@ -77,6 +64,7 @@ project(':astyanax') {
         compile  project(':astyanax-examples')
         compile  project(':astyanax-contrib')
         compile  project(':astyanax-test')
+        compile 'org.scala-lang:scala-library:2.10.4'
     }
 }
 
@@ -84,8 +72,8 @@ project(':astyanax-core') {
     apply plugin: 'osgi'
     apply plugin: 'java'
     dependencies {
-         compile group: 'com.typesafe.akka', name: 'akka-actor_2.10', version: '2.4-SNAPSHOT' //akka
-        compile group: 'org.scala-lang', name: 'scala-library', version: '2.10.4' //akka
+        compile group: 'com.typesafe.akka', name: 'akka-actor_2.10', version: '2.4-SNAPSHOT'
+        compile group: 'org.scala-lang', name: 'scala-library', version: '2.10.4'
         compile "com.typesafe:config:1.0.2"
         testCompile "junit:junit:$junitVersion"
     }
@@ -176,6 +164,7 @@ project(':astyanax-contrib') {
         compile  project(':astyanax-core')
         compile 'com.netflix.eureka:eureka-client:1.1.110'
         compile 'com.netflix.archaius:archaius-core:0.5.12'
+        compile project(':astyanax-thrift')
     }
 }
 
