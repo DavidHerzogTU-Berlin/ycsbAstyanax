@@ -1,6 +1,8 @@
 #!/bin/bash
-echo "delete jcraft"
+echo "delete .m2/repository/com/jcraft/"
 rm -r ~/.m2/repository/com/jcraft/
+echo "delete .m2/repository/com/google/code/findbugs/jsr305/"
+rm -r ~/.m2/repository/com/google/code/findbugs/jsr305/
 ./gradlew build -x test
 echo "copy astyanax-core to maven repo. and replace old version"
 cp astyanax-core/build/libs/astyanax-core-2.0.2-SNAPSHOT.jar ~/.m2/repository/com/netflix/astyanax/astyanax-core/1.56.42

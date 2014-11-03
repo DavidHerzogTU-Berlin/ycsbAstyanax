@@ -269,12 +269,12 @@ public class AstyanaxClient_1 extends DB {
 					double mu = 0;
 					int qsz = 0;
 					double latency = (double) opresult.getLatency();
-					 if (columns.getColumnByName("MU") != null) {
+					 /**if (columns.getColumnByName("MU") != null) {
 						 mu = Double.valueOf(columns.getColumnByName("MU").getStringValue());
 	                 }
 	                 if (columns.getColumnByName("QSZ") != null) {
 	                	 qsz = Integer.valueOf(columns.getColumnByName("QSZ").getStringValue());
-	                 }
+	                 }**/
 	                 PendingRequestMap.addSamples(ip, mu, qsz, latency);
 				}
 				
@@ -296,12 +296,12 @@ public class AstyanaxClient_1 extends DB {
 					double mu = 0;
 					int qsz = 0;
 					double latency = (double) opresult.getLatency();
-					 if (columns.getColumnByName("MU") != null) {
+					 /**if (columns.getColumnByName("MU") != null) {
 						 mu = Double.valueOf(columns.getColumnByName("MU").getStringValue());
 	                 }
 	                 if (columns.getColumnByName("QSZ") != null) {
 	                	 qsz = Integer.valueOf(columns.getColumnByName("QSZ").getStringValue());
-	                 }
+	                 }**/
 	                 PendingRequestMap.addSamples(ip, mu, qsz, latency);
 				}
 				

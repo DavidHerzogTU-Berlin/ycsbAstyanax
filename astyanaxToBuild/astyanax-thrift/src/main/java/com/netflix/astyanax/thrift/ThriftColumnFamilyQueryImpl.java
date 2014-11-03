@@ -205,6 +205,7 @@ public class ThriftColumnFamilyQueryImpl<K, C> implements ColumnFamilyQuery<K, C
                                         .toByteBuffer(rowKey), new ColumnParent().setColumn_family(columnFamily
                                         .getName()), predicate, ThriftConverter
                                         .ToThriftConsistencyLevel(consistencyLevel));
+                               // System.out.println(columnList.get(0).toString()); //try this one
                                 PendingRequestMap.decrementPendingRequest(context.toString());
                                 // Special handling for pagination
                                 if (isPaginating && predicate.isSetSlice_range()) {
